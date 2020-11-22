@@ -20,3 +20,4 @@ doc/api/
 .idea/
 *.iml
 .vscode/
+/all_firebase_flutter/.flutter-plugins-dependencies
