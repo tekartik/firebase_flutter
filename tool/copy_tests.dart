@@ -34,6 +34,8 @@ Future main() async {
       'all_firebase_flutter/test/core');
   await _copy('../firebase_auth.dart/auth_flutter/test',
       'all_firebase_flutter/test/auth');
+  await _copy('../firebase_storage.dart/storage_flutter/test',
+      'all_firebase_flutter/test/storage');
   await _copy('../firebase_firestore.dart/firestore_flutter/test',
       'all_firebase_flutter/test/firestore');
 }

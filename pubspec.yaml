@@ -3,10 +3,10 @@ description: Repo
 version: 0.1.0
 homepage: https://www.example.com
 author: alex <alex@tekartik.com>
-deploy_to: none
+publish_to: none
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
+  sdk: '>=2.10.0-0 <3.0.0'
 
 dev_dependencies:
   tekartik_travis_ci_flutter:
@@ -21,6 +21,7 @@ dev_dependencies:
       url: git://github.com/tekartik/app_common_utils.dart
       ref: dart2
       path: app_emit
+  dev_test:
 
 dependency_overrides:
 # tmp
