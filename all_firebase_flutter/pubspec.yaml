@@ -34,7 +34,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_storage.dart
       path: storage_flutter
       ref: dart2
-    version: '>=0.3.0'
+    version: '>=0.4.3'
 dev_dependencies:
   dev_test:
   flutter_test:
