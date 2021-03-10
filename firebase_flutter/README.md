@@ -10,7 +10,7 @@ Firebase on flutter
 dependencies:
   tekartik_firebase_flutter:
     git:
-      url: git://github.com/tekartik/firebase_flutter_
+      url: git://github.com/tekartik/firebase_flutter
       path: firebase_flutter
       ref: dart2
     version: '>=0.7.2'
