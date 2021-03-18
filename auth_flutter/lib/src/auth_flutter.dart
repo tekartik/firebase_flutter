@@ -19,7 +19,7 @@ class AuthServiceFlutterImpl
       assert(app is firebase_flutter.AppFlutter, 'invalid firebase app type');
       final appFlutter = app as firebase_flutter.AppFlutter;
       return AuthFlutterImpl(
-          native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance));
+          native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance!));
     });
   }
 
@@ -30,12 +30,12 @@ class AuthServiceFlutterImpl
   bool get supportsCurrentUser => true;
 }
 
-AuthServiceFlutter _firebaseAuthServiceFlutter;
+AuthServiceFlutter? _firebaseAuthServiceFlutter;
 
 AuthServiceFlutter get authService =>
     _firebaseAuthServiceFlutter ??= AuthServiceFlutterImpl();
 
-UserFlutterImpl wrapUser(native.User nativeUser) =>
+UserFlutterImpl? wrapUser(native.User? nativeUser) =>
     nativeUser != null ? UserFlutterImpl(nativeUser) : null;
 
 class UserFlutterImpl implements User, UserInfoWithIdToken {
@@ -44,10 +44,10 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   UserFlutterImpl(this.nativeInstance);
 
   @override
-  String get displayName => nativeInstance.displayName;
+  String? get displayName => nativeInstance.displayName;
 
   @override
-  String get email => nativeInstance.email;
+  String? get email => nativeInstance.email;
 
   @override
   bool get emailVerified => nativeInstance.emailVerified;
@@ -56,13 +56,13 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   bool get isAnonymous => nativeInstance.isAnonymous;
 
   @override
-  String get phoneNumber => nativeInstance.phoneNumber;
+  String? get phoneNumber => nativeInstance.phoneNumber;
 
   @override
-  String get photoURL => nativeInstance.photoURL;
+  String? get photoURL => nativeInstance.photoURL;
 
   @override
-  String get providerId =>
+  String? get providerId =>
       null; // no longer supported - nativeInstance.providerId;
 
   @override
@@ -72,14 +72,14 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   String toString() => '$displayName ($email)';
 
   @override
-  Future<String> getIdToken({bool forceRefresh}) async =>
+  Future<String> getIdToken({bool? forceRefresh}) async =>
       await nativeInstance.getIdToken(forceRefresh ?? false);
 }
 
 class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   final native.FirebaseAuth nativeAuth;
 
-  StreamSubscription onAuthStateChangedSubscription;
+  StreamSubscription? onAuthStateChangedSubscription;
 
   void _listenToCurrentUser() {
     onAuthStateChangedSubscription?.cancel();
@@ -94,25 +94,25 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   }
 
   @override
-  Future<User> reloadCurrentUser() async {
+  Future<User?> reloadCurrentUser() async {
     await (nativeAuth.currentUser)?.reload();
     _listenToCurrentUser();
     return wrapUser((nativeAuth.currentUser));
   }
 
   @override
-  Future close(common.App app) async {
+  Future close(common.App? app) async {
     await super.close(app);
     await onAuthStateChangedSubscription?.cancel();
   }
 
-  google_sign_in.GoogleSignIn _googleSignIn;
+  google_sign_in.GoogleSignIn? _googleSignIn;
 
   /// Google only...
   @override
-  Future<User> googleSignIn() async {
+  Future<User?> googleSignIn() async {
     _googleSignIn ??= google_sign_in.GoogleSignIn();
-    final googleUser = await _googleSignIn.signIn();
+    final googleUser = await _googleSignIn!.signIn();
     if (googleUser == null) {
       return null;
     }
@@ -133,5 +133,5 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   }
 
   @override
-  String toString() => 'AuthFlutter(${nativeAuth?.app?.name})';
+  String toString() => 'AuthFlutter(${nativeAuth.app.name})';
 }
