@@ -193,10 +193,10 @@ dynamic toNativeValue(value) {
   } else if (value is DocumentReferenceFlutter) {
     return value.nativeInstance;
   } else if (value is Blob) {
-    return native.Blob(value.data!);
+    return native.Blob(value.data);
   } else if (value is GeoPoint) {
     return native.GeoPoint(
-        value.latitude!.toDouble(), value.longitude!.toDouble());
+        value.latitude.toDouble(), value.longitude.toDouble());
   }
 
   throw 'not supported $value type ${value.runtimeType}';
