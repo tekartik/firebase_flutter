@@ -16,7 +16,7 @@ AppOptions _fromNativeOption(flutter.FirebaseOptions fbOptions) {
 
 class FirebaseFlutter implements FirebaseAsync, Firebase {
   @override
-  Future<App> initializeAppAsync({AppOptions options, String name}) async {
+  Future<App> initializeAppAsync({AppOptions? options, String? name}) async {
     flutter.FirebaseApp nativeApp;
     var isDefault = false;
     if (options != null) {
@@ -38,7 +38,7 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
   }
 
   @override
-  App initializeApp({AppOptions options, String name}) {
+  App initializeApp({AppOptions? options, String? name}) {
     if (options == null && name == null) {
       // TODO 2020-08-26 if this fail, consider calling async method only
       var nativeApp = flutter.Firebase.app();
@@ -51,7 +51,7 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
   }
 
   @override
-  App app({String name}) {
+  App app({String? name}) {
     if (name == null) {
       var nativeApp = flutter.Firebase.app();
       return AppFlutter(
@@ -64,14 +64,14 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
   }
 
   @override
-  Future<App> appAsync({String name}) async => initializeAppAsync(name: name);
+  Future<App> appAsync({String? name}) async => initializeAppAsync(name: name);
 }
 
 class AppFlutter with FirebaseAppMixin {
-  final bool isDefault;
+  final bool? isDefault;
   @override
-  final AppOptions options;
-  final flutter.FirebaseApp nativeInstance;
+  final AppOptions? options;
+  final flutter.FirebaseApp? nativeInstance;
 
   AppFlutter({this.nativeInstance, this.options, this.isDefault});
 
@@ -83,12 +83,12 @@ class AppFlutter with FirebaseAppMixin {
   }
 
   @override
-  String get name => nativeInstance.name;
+  String get name => nativeInstance!.name;
 
   @override
   String toString() => 'AppFlutter($name)';
 }
 
-FirebaseFlutter _firebaseFlutter;
+FirebaseFlutter? _firebaseFlutter;
 
 FirebaseFlutter get firebaseFlutter => _firebaseFlutter ??= FirebaseFlutter();
