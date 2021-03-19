@@ -10,6 +10,6 @@ In `pubspec.yaml`:
     git:
       url: git://github.com/tekartik/firebase_flutter
       path: storage_flutter
-      ref: dart2
+      ref: null_safety
     version: '>=0.4.0'
 ```
