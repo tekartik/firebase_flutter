@@ -108,7 +108,7 @@ class TransactionFlutter implements Transaction {
           await nativeInstance.get(_unwrapDocumentReference(documentRef)!));
 
   @override
-  void set(DocumentReference documentRef, Map<String, dynamic> data,
+  void set(DocumentReference documentRef, Map<String, Object?> data,
       [SetOptions? options]) {
     // Warning merge is not handle yet!
     nativeInstance.set(
@@ -118,7 +118,7 @@ class TransactionFlutter implements Transaction {
   }
 
   @override
-  void update(DocumentReference documentRef, Map<String, dynamic> data) {
+  void update(DocumentReference documentRef, Map<String, Object?> data) {
     nativeInstance.update(_unwrapDocumentReference(documentRef)!,
         documentDataToFlutterData(DocumentData(data)));
   }
@@ -142,7 +142,7 @@ class WriteBatchFlutter implements WriteBatch {
       nativeInstance.delete(_unwrapDocumentReference(ref!)!);
 
   @override
-  void set(DocumentReference ref, Map<String, dynamic> data,
+  void set(DocumentReference ref, Map<String, Object?> data,
       [SetOptions? options]) {
     nativeInstance.set(
         _unwrapDocumentReference(ref)!,
@@ -151,7 +151,7 @@ class WriteBatchFlutter implements WriteBatch {
   }
 
   @override
-  void update(DocumentReference ref, Map<String, dynamic> data) =>
+  void update(DocumentReference ref, Map<String, Object?> data) =>
       nativeInstance.update(_unwrapDocumentReference(ref)!,
           documentDataToFlutterData(DocumentData(data)));
 }
@@ -165,7 +165,7 @@ bool isCommonValue(value) {
       value is bool);
 }
 
-List<dynamic>? toNativeValues(Iterable<dynamic>? values) =>
+List<Object?>? toNativeValues(Iterable<Object?>? values) =>
     values?.map((e) => toNativeValue(e)).toList(growable: false);
 
 dynamic toNativeValue(value) {
@@ -178,7 +178,7 @@ dynamic toNativeValue(value) {
   } else if (value is Iterable) {
     return toNativeValues(value);
   } else if (value is Map) {
-    return value.map<String, dynamic>(
+    return value.map<String, Object?>(
         (key, value) => MapEntry(key as String, toNativeValue(value)));
   } else if (value is FieldValue) {
     if (FieldValue.delete == value) {
@@ -211,7 +211,7 @@ dynamic fromNativeValue(nativeValue) {
         .map((nativeValue) => fromNativeValue(nativeValue))
         .toList();
   } else if (nativeValue is Map) {
-    return nativeValue.map<String, dynamic>((key, nativeValue) =>
+    return nativeValue.map<String, Object?>((key, nativeValue) =>
         MapEntry(key as String, fromNativeValue(nativeValue)));
   } else if (native.FieldValue.delete() == nativeValue) {
     return FieldValue.delete;
@@ -233,13 +233,13 @@ dynamic fromNativeValue(nativeValue) {
   }
 }
 
-Map<String, dynamic> documentDataToFlutterData(DocumentData data) {
+Map<String, Object?> documentDataToFlutterData(DocumentData data) {
   var map = data.asMap();
-  return toNativeValue(map) as Map<String, dynamic>;
+  return toNativeValue(map) as Map<String, Object?>;
 }
 
-DocumentData documentDataFromFlutterData(Map<String, dynamic> nativeMap) {
-  var map = fromNativeValue(nativeMap) as Map<String, dynamic>;
+DocumentData documentDataFromFlutterData(Map nativeMap) {
+  var map = fromNativeValue(nativeMap) as Map<String, Object?>;
   return DocumentData(map);
 }
 
@@ -310,8 +310,8 @@ class QueryFlutter implements Query {
       dynamic isGreaterThan,
       dynamic isGreaterThanOrEqualTo,
       dynamic arrayContains,
-      List<dynamic>? arrayContainsAny,
-      List<dynamic>? whereIn,
+      List<Object?>? arrayContainsAny,
+      List<Object?>? whereIn,
       bool? isNull}) {
     return _wrapQuery(nativeInstance!.where(fieldPath,
         isEqualTo: toNativeValue(isEqualTo),
@@ -335,7 +335,7 @@ class CollectionReferenceFlutter extends QueryFlutter
       super.nativeInstance as native.CollectionReference?;
 
   @override
-  Future<DocumentReference> add(Map<String, dynamic> data) async =>
+  Future<DocumentReference> add(Map<String, Object?> data) async =>
       _wrapDocumentReference(await nativeInstance!
           .add(documentDataToFlutterData(DocumentData(data))));
 
@@ -432,12 +432,12 @@ class DocumentReferenceFlutter implements DocumentReference {
   String get path => nativeInstance!.path;
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions? options]) =>
+  Future set(Map<String, Object?> data, [SetOptions? options]) =>
       nativeInstance!.set(documentDataToFlutterData(DocumentData(data)),
           unwrapSetOption(options));
 
   @override
-  Future update(Map<String, dynamic> data) =>
+  Future update(Map<String, Object?> data) =>
       nativeInstance!.update(documentDataToFlutterData(DocumentData(data)));
 
   @override
@@ -457,8 +457,8 @@ class DocumentSnapshotFlutter implements DocumentSnapshot {
   DocumentSnapshotFlutter(this.nativeInstance);
 
   @override
-  Map<String, dynamic> get data =>
-      documentDataFromFlutterData(nativeInstance.data()!).asMap();
+  Map<String, Object?> get data =>
+      documentDataFromFlutterData(nativeInstance.data() as Map).asMap();
 
   @override
   bool get exists => nativeInstance.exists;
