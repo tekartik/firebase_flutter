@@ -1,0 +1,34 @@
+name: tekartik_firebase_firestore_flutter
+description: Firebase firestore for flutter
+version: 0.9.7
+publish_to: none
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  path:
+  tekartik_firebase_firestore:
+    git:
+      url: git://github.com/tekartik/firebase_firestore.dart
+      path: firestore
+      ref: null_safety
+    version: '>=0.8.0'
+  tekartik_firebase_flutter:
+    git:
+      url: git://github.com/tekartik/firebase_flutter
+      path: firebase_flutter
+      ref: null_safety
+    version: '>=0.6.0'
+  cloud_firestore: '>=0.14.0'
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  process_run: '>=0.10.2'
+
+dependency_overrides:
+  tekartik_firebase_flutter:
+    path: ../firebase_flutter
