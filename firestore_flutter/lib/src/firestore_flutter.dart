@@ -272,7 +272,7 @@ class QueryFlutter implements Query {
   @override
   Stream<QuerySnapshot> onSnapshot() {
     var transformer = StreamTransformer.fromHandlers(handleData:
-        (native.QuerySnapshot nativeQuerySnapshot,
+        (native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
             EventSink<QuerySnapshot> sink) {
       sink.add(_wrapQuerySnapshot(nativeQuerySnapshot));
     });
@@ -326,13 +326,25 @@ class QueryFlutter implements Query {
   }
 }
 
+mixin PathReferenceFlutterMixin {
+  @override
+  int get hashCode => path.hashCode;
+
+  String get path;
+
+  @override
+  bool operator ==(other) =>
+      (other is PathReferenceFlutterMixin) && path == other.path;
+}
+
 class CollectionReferenceFlutter extends QueryFlutter
+    with PathReferenceFlutterMixin
     implements CollectionReference {
-  CollectionReferenceFlutter(native.CollectionReference? nativeInstance)
+  CollectionReferenceFlutter(native.CollectionReference nativeInstance)
       : super(nativeInstance);
   @override
   native.CollectionReference? get nativeInstance =>
-      super.nativeInstance as native.CollectionReference?;
+      super.nativeInstance as native.CollectionReference;
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
@@ -358,13 +370,6 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   String toString() => 'CollRef($path)';
-
-  @override
-  int get hashCode => path.hashCode;
-
-  @override
-  bool operator ==(other) =>
-      (other is CollectionReferenceFlutter) && path == other.path;
 }
 
 native.DocumentReference? _unwrapDocumentReference(DocumentReference ref) =>
@@ -395,60 +400,55 @@ DocumentChangeType? _wrapDocumentChangeType(
   }
 }
 
-class DocumentReferenceFlutter implements DocumentReference {
-  final native.DocumentReference? nativeInstance;
+class DocumentReferenceFlutter
+    with PathReferenceFlutterMixin
+    implements DocumentReference {
+  final native.DocumentReference nativeInstance;
 
   DocumentReferenceFlutter(this.nativeInstance);
   @override
   CollectionReference collection(String path) =>
-      _wrapCollectionReference(nativeInstance!.collection(path));
+      _wrapCollectionReference(nativeInstance.collection(path));
 
   @override
-  Future delete() => nativeInstance!.delete();
+  Future delete() => nativeInstance.delete();
 
   @override
   Future<DocumentSnapshot> get() async =>
-      _wrapDocumentSnapshot(await nativeInstance!.get());
+      _wrapDocumentSnapshot(await nativeInstance.get());
 
   @override
-  String get id => nativeInstance!.id;
+  String get id => nativeInstance.id;
 
   @override
   Stream<DocumentSnapshot> onSnapshot() {
     var transformer = StreamTransformer.fromHandlers(handleData:
-        (native.DocumentSnapshot nativeDocumentSnapshot,
+        (native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {
       sink.add(_wrapDocumentSnapshot(nativeDocumentSnapshot));
     });
-    return nativeInstance!.snapshots().transform(transformer);
+    return nativeInstance.snapshots().transform(transformer);
   }
 
   // _TODO: implement parent
   @override
   CollectionReference get parent => _wrapCollectionReference(
-      nativeInstance!.firestore.collection(url.dirname(path)));
+      nativeInstance.firestore.collection(url.dirname(path)));
 
   @override
-  String get path => nativeInstance!.path;
+  String get path => nativeInstance.path;
 
   @override
   Future set(Map<String, Object?> data, [SetOptions? options]) =>
-      nativeInstance!.set(documentDataToFlutterData(DocumentData(data)),
+      nativeInstance.set(documentDataToFlutterData(DocumentData(data)),
           unwrapSetOption(options));
 
   @override
   Future update(Map<String, Object?> data) =>
-      nativeInstance!.update(documentDataToFlutterData(DocumentData(data)));
+      nativeInstance.update(documentDataToFlutterData(DocumentData(data)));
 
   @override
   String toString() => 'DocRef($path)';
-
-  @override
-  int get hashCode => path.hashCode;
-
-  @override
-  bool operator ==(other) =>
-      (other is DocumentReferenceFlutter) && path == other.path;
 }
 
 class DocumentSnapshotFlutter implements DocumentSnapshot {
