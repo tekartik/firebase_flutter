@@ -9,7 +9,9 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: impl
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
+
 FirestoreService get firestoreService => firestoreServiceFlutter;
+
 FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
@@ -126,6 +128,7 @@ class TransactionFlutter implements Transaction {
 
 native.SetOptions? unwrapSetOption(SetOptions? options) =>
     options == null ? null : native.SetOptions(merge: options.merge ?? false);
+
 SetOptions wrapSetOption(native.SetOptions options) =>
     SetOptions(merge: options.merge ?? false);
 
@@ -250,6 +253,7 @@ class QueryFlutter implements Query {
   final native.Query? nativeInstance;
 
   QueryFlutter(this.nativeInstance);
+
   @override
   Query endAt({DocumentSnapshot? snapshot, List? values}) {
     return _wrapQuery(nativeInstance!.endAt(toNativeValue(values) as List));
@@ -342,6 +346,7 @@ class CollectionReferenceFlutter extends QueryFlutter
     implements CollectionReference {
   CollectionReferenceFlutter(native.CollectionReference nativeInstance)
       : super(nativeInstance);
+
   @override
   native.CollectionReference? get nativeInstance =>
       super.nativeInstance as native.CollectionReference;
@@ -374,20 +379,26 @@ class CollectionReferenceFlutter extends QueryFlutter
 
 native.DocumentReference? _unwrapDocumentReference(DocumentReference ref) =>
     (ref as DocumentReferenceFlutter).nativeInstance;
+
 CollectionReferenceFlutter _wrapCollectionReference(
         native.CollectionReference nativeInstance) =>
     CollectionReferenceFlutter(nativeInstance);
+
 DocumentReferenceFlutter _wrapDocumentReference(
         native.DocumentReference nativeInstance) =>
     DocumentReferenceFlutter(nativeInstance);
+
 QuerySnapshotFlutter _wrapQuerySnapshot(native.QuerySnapshot nativeInstance) =>
     QuerySnapshotFlutter(nativeInstance);
+
 DocumentSnapshotFlutter _wrapDocumentSnapshot(
         native.DocumentSnapshot nativeInstance) =>
     DocumentSnapshotFlutter(nativeInstance);
+
 DocumentChangeFlutter _wrapDocumentChange(
         native.DocumentChange nativeInstance) =>
     DocumentChangeFlutter(nativeInstance);
+
 DocumentChangeType? _wrapDocumentChangeType(
     native.DocumentChangeType nativeInstance) {
   switch (nativeInstance) {
@@ -406,6 +417,7 @@ class DocumentReferenceFlutter
   final native.DocumentReference nativeInstance;
 
   DocumentReferenceFlutter(this.nativeInstance);
+
   @override
   CollectionReference collection(String path) =>
       _wrapCollectionReference(nativeInstance.collection(path));
