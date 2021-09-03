@@ -84,7 +84,7 @@ class FirestoreFlutter implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {
-    nativeInstance.settings = native.Settings();
+    nativeInstance.settings = const native.Settings();
   }
 
   @override
