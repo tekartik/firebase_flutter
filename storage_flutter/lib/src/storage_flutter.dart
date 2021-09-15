@@ -7,6 +7,7 @@ import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/src/common/storage_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/storage.dart';
+import 'package:tekartik_firebase_storage/utils/link.dart';
 
 class StorageServiceFlutter with StorageServiceMixin implements StorageService {
   StorageServiceFlutter();
@@ -33,7 +34,8 @@ StorageServiceFlutter get storageServiceFlutter =>
 
 Future<native.Reference> getReferenceFromName(
     BucketFlutter bucket, String name) async {
-  var ref = bucket.storage.firebaseStorage!.refFromURL(nameToUrl(name));
+  var ref = bucket.storage.firebaseStorage
+      .refFromURL(StorageFileRef(bucket.name, name).toLink().toString());
   return ref;
 }
 
@@ -89,7 +91,7 @@ class FileFlutter with FileMixin implements File {
   }
 
   @override
-  String get name => _ref!.name;
+  String get name => _ref!.fullPath;
 }
 
 class BucketFlutter with BucketMixin implements Bucket {
@@ -111,7 +113,7 @@ class BucketFlutter with BucketMixin implements Bucket {
   @override
   Future<bool> exists() async {
     try {
-      await storage.firebaseStorage!.ref(name).getMetadata();
+      await storage.firebaseStorage.ref(name).getMetadata();
       return true;
     } catch (_) {
       return false;
@@ -128,23 +130,30 @@ class ReferenceFlutter with ReferenceMixin implements Reference {
 
   @override
   Future<String> getDownloadUrl() => nativeInstance.getDownloadURL();
+
+  @override
+  String toString() => nativeInstance.toString();
 }
 
 class StorageFlutter implements Storage {
-  final native.FirebaseStorage? firebaseStorage;
+  final native.FirebaseStorage firebaseStorage;
 
   StorageFlutter(this.firebaseStorage);
 
   @override
   Bucket bucket([String? name]) {
-    return BucketFlutter(this, name);
+    return BucketFlutter(this, name ?? firebaseStorage.bucket);
   }
 
   @override
   Reference ref([String? path]) {
     path ??= '/';
     path = path.isEmpty ? '/' : path;
-    return ReferenceFlutter(firebaseStorage!.ref(path));
+    if (path.startsWith('gs://')) {
+      return ReferenceFlutter(firebaseStorage.refFromURL(path));
+    } else {
+      return ReferenceFlutter(firebaseStorage.ref(path));
+    }
   }
 }
 
@@ -165,7 +174,7 @@ FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
-    with FirestoreServiceMixin
+    with FirestoreServfinal urlWithoutScheme = url.replaceFirst('${uri.scheme}://', '');iceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
