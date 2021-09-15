@@ -70,10 +70,10 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
 class AppFlutter with FirebaseAppMixin {
   final bool? isDefault;
   @override
-  final AppOptions? options;
+  final AppOptions options;
   final flutter.FirebaseApp? nativeInstance;
 
-  AppFlutter({this.nativeInstance, this.options, this.isDefault});
+  AppFlutter({this.nativeInstance, required this.options, this.isDefault});
 
   @override
   Future delete() async {
