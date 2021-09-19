@@ -5,6 +5,10 @@ import 'package:tekartik_firebase_storage/storage.dart';
 
 class BucketMock implements Bucket {
   @override
+  final String name;
+
+  BucketMock(this.name);
+  @override
   Future<bool> exists() {
     // TODO: implement exists
     throw UnimplementedError();
@@ -21,10 +25,6 @@ class BucketMock implements Bucket {
     // TODO: implement getFiles
     throw UnimplementedError();
   }
-
-  @override
-  // TODO: implement name
-  String get name => throw UnimplementedError();
 }
 
 class StorageFlutterMock implements Storage {
@@ -32,8 +32,7 @@ class StorageFlutterMock implements Storage {
 
   @override
   Bucket bucket([String? name]) {
-    // TODO: implement bucket
-    throw UnimplementedError();
+    return BucketMock(name!);
   }
 
   @override
