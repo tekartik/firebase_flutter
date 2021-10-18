@@ -39,6 +39,20 @@ Future<native.Reference> getReferenceFromName(
   return ref;
 }
 
+class FileMetadataFlutter with FileMetadataMixin implements FileMetadata {
+  final native.FullMetadata _full;
+
+  FileMetadataFlutter(this._full);
+  @override
+  DateTime get dateUpdated => _full.updated!;
+
+  @override
+  String get md5Hash => _full.md5Hash!;
+
+  @override
+  int get size => _full.size!;
+}
+
 class FileFlutter with FileMixin implements File {
   @override
   final BucketFlutter bucket;
@@ -71,6 +85,13 @@ class FileFlutter with FileMixin implements File {
     _ref ??= await _initRef();
     var metaData = await _ref!.getMetadata();
     return (await _ref!.getData(metaData.size!))!;
+  }
+
+  /// Get file meta data
+  @override
+  Future<FileMetadata> getMetadata() async {
+    var fullMetadata = await _ref!.getMetadata();
+    return FileMetadataFlutter(fullMetadata);
   }
 
   @override
