@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:firebase_storage/firebase_storage.dart' as native;
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/src/common/storage_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/storage.dart';
 import 'package:tekartik_firebase_storage/utils/link.dart';
+
+import 'import.dart';
 
 class StorageServiceFlutter with StorageServiceMixin implements StorageService {
   StorageServiceFlutter();
@@ -43,6 +44,7 @@ class FileMetadataFlutter with FileMetadataMixin implements FileMetadata {
   final native.FullMetadata _full;
 
   FileMetadataFlutter(this._full);
+
   @override
   DateTime get dateUpdated => _full.updated!;
 

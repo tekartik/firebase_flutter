@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:path/path.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
+
+import 'import.dart';
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
 
