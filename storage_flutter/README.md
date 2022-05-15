@@ -8,8 +8,8 @@ In `pubspec.yaml`:
 ```yaml
   tekartik_firebase_storage_flutter:
     git:
-      url: git://github.com/tekartik/firebase_flutter
+      url: https://github.com/tekartik/firebase_flutter
       path: storage_flutter
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.4.0'
 ```

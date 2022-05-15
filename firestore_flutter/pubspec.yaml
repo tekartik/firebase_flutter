@@ -12,15 +12,15 @@ dependencies:
   path:
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.8.0'
   tekartik_firebase_flutter:
     git:
-      url: git://github.com/tekartik/firebase_flutter
+      url: https://github.com/tekartik/firebase_flutter
       path: firebase_flutter
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.6.0'
   cloud_firestore: '>=2.0.0'
 
@@ -30,8 +30,8 @@ dev_dependencies:
   process_run: '>=0.10.2'
   tekartik_app_lints_flutter:
     git:
-      url: git://github.com/tekartik/app_flutter_utils.dart
-      ref: null_safety
+      url: https://github.com/tekartik/app_flutter_utils.dart
+      ref: dart2_3
       path: app_lints
     version: '>=0.1.0'
 

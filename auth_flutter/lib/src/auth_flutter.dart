@@ -3,12 +3,13 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
-import 'package:tekartik_firebase/firebase.dart' as common;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     as firebase_flutter;
+
+import 'import.dart' as common;
 
 class AuthServiceFlutterImpl
     with AuthServiceMixin

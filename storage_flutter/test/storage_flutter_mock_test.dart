@@ -10,21 +10,24 @@ class BucketMock implements Bucket {
   BucketMock(this.name);
   @override
   Future<bool> exists() {
-    // TODO: implement exists
     throw UnimplementedError();
   }
 
   @override
   File file(String path) {
-    // TODO: implement file
     throw UnimplementedError();
   }
 
   @override
   Future<GetFilesResponse> getFiles([GetFilesOptions? options]) {
-    // TODO: implement getFiles
     throw UnimplementedError();
   }
+}
+
+class ReferenceMock with ReferenceMixin {
+  final String? path;
+
+  ReferenceMock(this.path);
 }
 
 class StorageFlutterMock implements Storage {
@@ -36,9 +39,8 @@ class StorageFlutterMock implements Storage {
   }
 
   @override
-  Reference ref([String? path]) {
-    // TODO: implement ref
-    throw UnimplementedError();
+  ReferenceMock ref([String? path]) {
+    return ReferenceMock(path);
   }
 }
 
@@ -50,6 +52,10 @@ void main() {
       var storage = StorageFlutterMock();
       var bucket = storage.bucket('test');
       expect(bucket.name, 'test');
+      var ref = storage.ref();
+      expect(ref.path, isNull);
+      ref = storage.ref('dummy');
+      expect(ref.path, 'dummy');
     });
   });
 }
