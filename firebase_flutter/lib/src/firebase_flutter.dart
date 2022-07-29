@@ -25,6 +25,13 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
       if (options.projectId == null) {
         nativeApp = await flutter.Firebase.initializeApp(name: name);
       } else {
+        nativeApp = await flutter.Firebase.initializeApp(
+            name: name,
+            options: flutter.FirebaseOptions(
+                apiKey: options.apiKey!,
+                appId: options.appId!,
+                messagingSenderId: options.messagingSenderId!,
+                projectId: options.projectId!));
         throw 'not supported yet';
       }
     } else {

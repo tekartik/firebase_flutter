@@ -7,4 +7,5 @@ export 'auth_flutter_api.dart';
 /// The flutter auth service
 AuthService get authServiceFlutter => auth_flutter.authService;
 
+@Deprecated('Use authServiceFlutter')
 AuthService get authService => authServiceFlutter;
