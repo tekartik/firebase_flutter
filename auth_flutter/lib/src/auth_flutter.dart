@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as native;
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
@@ -112,20 +113,42 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   /// Google only...
   @override
   Future<User?> googleSignIn() async {
-    _googleSignIn ??= google_sign_in.GoogleSignIn();
-    final googleUser = await _googleSignIn!.signIn();
-    if (googleUser == null) {
-      return null;
+    if (!kIsWeb) {
+      late native.AuthCredential credential;
+      _googleSignIn ??= google_sign_in.GoogleSignIn();
+      final googleUser = await _googleSignIn!.signIn();
+      if (googleUser == null) {
+        return null;
+      }
+      final googleAuth = await googleUser.authentication;
+
+      credential = native.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final nativeUser =
+          (await nativeAuth.signInWithCredential(credential)).user;
+      return wrapUser(nativeUser);
+    } else {
+      var userCredentials = await webSignInWithGoogle();
+      final nativeUser = userCredentials.user;
+      return wrapUser(nativeUser);
     }
-    final googleAuth = await googleUser.authentication;
+  }
 
-    final credential = native.GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+  Future<native.UserCredential> webSignInWithGoogle() async {
+    // Create a new provider
+    var googleProvider = native.GoogleAuthProvider();
 
-    final nativeUser = (await nativeAuth.signInWithCredential(credential)).user;
-    return wrapUser(nativeUser);
+    //googleProvider
+    //    .addScope('https://www.googleapis.com/auth/contacts.readonly');
+    //googleProvider.setCustomParameters({'login_hint': 'user@example.com'});
+
+    // Once signed in, return the UserCredential
+    return await native.FirebaseAuth.instance.signInWithPopup(googleProvider);
+
+    // Or use signInWithRedirect
+    // return await FirebaseAuth.instance.signInWithRedirect(googleProvider);
   }
 
   @override
