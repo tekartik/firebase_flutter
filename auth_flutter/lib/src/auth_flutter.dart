@@ -1,16 +1,16 @@
 // ignore_for_file: implementation_imports
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
+import 'package:tekartik_firebase_auth_flutter/src/google_auth.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     as firebase_flutter;
 
 import 'import.dart' as common;
+import 'import.dart';
 
 class AuthServiceFlutterImpl
     with AuthServiceMixin
@@ -39,6 +39,29 @@ AuthServiceFlutter get authService =>
 
 UserFlutterImpl? wrapUser(native.User? nativeUser) =>
     nativeUser != null ? UserFlutterImpl(nativeUser) : null;
+
+/// Flutter impl
+class AuthCredentialFlutter implements AuthCredential {
+  final native.AuthCredential nativeInstance;
+
+  AuthCredentialFlutter(this.nativeInstance);
+  @override
+  String get providerId => nativeInstance.providerId;
+}
+
+/// Flutter impl
+class UserCredentialFlutter implements UserCredential {
+  final native.UserCredential nativeInstance;
+  User? _user;
+
+  UserCredentialFlutter(this.nativeInstance);
+  @override
+  AuthCredential get credential =>
+      AuthCredentialFlutter(nativeInstance.credential!);
+
+  @override
+  User get user => _user ??= wrapUser(nativeInstance.user)!;
+}
 
 class UserFlutterImpl implements User, UserInfoWithIdToken {
   final native.User nativeInstance;
@@ -110,6 +133,23 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
 
   google_sign_in.GoogleSignIn? _googleSignIn;
 
+  Future<AuthSignInResult?> nativeGoogleSignIn() async {
+    late native.AuthCredential credential;
+    _googleSignIn ??= google_sign_in.GoogleSignIn();
+    final googleUser = await _googleSignIn!.signIn();
+    if (googleUser == null) {
+      return null;
+    }
+    final googleAuth = await googleUser.authentication;
+
+    credential = native.GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    final credentials = (await nativeAuth.signInWithCredential(credential));
+    return AuthSignInResultFlutter(credentials);
+  }
+
   /// Google only...
   @override
   Future<User?> googleSignIn() async {
@@ -157,5 +197,50 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   }
 
   @override
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions? options}) async {
+    //devPrint('signIn($authProvider, $options)');
+    if (authProvider is GoogleAuthProvider) {
+      //devPrint('google');
+      var nativeAuthProvider =
+          (authProvider as GoogleAuthProviderImpl).nativeAuthProvider;
+
+      if (options is AuthSignInOptionsWeb) {
+        if (options.isPopup) {
+          //devPrint('popup');
+          var credentials =
+              await nativeAuth.signInWithPopup(nativeAuthProvider);
+          //devPrint('popup done');
+          return AuthSignInResultFlutter(credentials);
+        } else {
+          //devPrint('redirect');
+          await nativeAuth.signInWithRedirect(nativeAuthProvider);
+          //devPrint('redirect done');
+          throw StateError('Sign in result sent later');
+          //return AuthSignInResultFlutter(credentials);
+        }
+      } else {
+        var credentials =
+            await nativeAuth.signInWithAuthProvider(nativeAuthProvider);
+        return AuthSignInResultFlutter(credentials);
+      }
+    }
+    throw UnsupportedError('Unsupported provider ${authProvider.providerId}');
+  }
+
+  @override
   String toString() => 'AuthFlutter(${nativeAuth.app.name})';
+}
+
+class AuthSignInResultFlutter implements AuthSignInResult {
+  final native.UserCredential nativeUserCredentials;
+
+  AuthSignInResultFlutter(this.nativeUserCredentials);
+
+  @override
+  UserCredential? get credential =>
+      UserCredentialFlutter(nativeUserCredentials);
+
+  @override
+  bool get hasInfo => true;
 }

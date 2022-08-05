@@ -1,1 +1,2 @@
-export 'src/auth_flutter_api.dart' show AuthFlutter, AuthServiceFlutter;
+export 'src/auth_flutter_api.dart'
+    show AuthFlutter, AuthServiceFlutter, AuthSignInOptionsWeb;
