@@ -269,6 +269,10 @@ class QueryFlutter implements Query {
   Future<QuerySnapshot> get() async =>
       _wrapQuerySnapshot(await nativeInstance!.get());
 
+  /// Simplifies aggregate response.
+  @override
+  Future<int> count() async => (await nativeInstance!.count().get()).count;
+
   @override
   Query limit(int limit) {
     return _wrapQuery(nativeInstance!.limit(limit));
