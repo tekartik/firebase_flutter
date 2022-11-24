@@ -221,7 +221,7 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
         }
       } else {
         var credentials =
-            await nativeAuth.signInWithAuthProvider(nativeAuthProvider);
+            await nativeAuth.signInWithProvider(nativeAuthProvider);
         return AuthSignInResultFlutter(credentials);
       }
     }
