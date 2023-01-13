@@ -161,7 +161,7 @@ class WriteBatchFlutter implements WriteBatch {
 }
 
 // for both native and not
-bool isCommonValue(value) {
+bool isCommonValue(Object? value) {
   return (value == null ||
       value is String ||
       // value is DateTime ||
@@ -172,7 +172,7 @@ bool isCommonValue(value) {
 List<Object?>? toNativeValues(Iterable<Object?>? values) =>
     values?.map((e) => toNativeValue(e)).toList(growable: false);
 
-dynamic toNativeValue(value) {
+dynamic toNativeValue(Object? value) {
   if (isCommonValue(value)) {
     return value;
   } else if (value is Timestamp) {
@@ -206,7 +206,7 @@ dynamic toNativeValue(value) {
   throw 'not supported $value type ${value.runtimeType}';
 }
 
-dynamic fromNativeValue(nativeValue) {
+dynamic fromNativeValue(Object? nativeValue) {
   if (isCommonValue(nativeValue)) {
     return nativeValue;
   }
