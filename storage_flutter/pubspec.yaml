@@ -37,6 +37,5 @@ dev_dependencies:
     version: '>=0.1.0'
 
 dependency_overrides:
-  # pedantic: '>=1.9.0'
   tekartik_firebase_flutter:
     path: ../firebase_flutter
