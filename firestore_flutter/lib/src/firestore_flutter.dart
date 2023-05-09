@@ -442,13 +442,15 @@ class DocumentReferenceFlutter
   String get id => nativeInstance.id;
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {
       sink.add(_wrapDocumentSnapshot(nativeDocumentSnapshot));
     });
-    return nativeInstance.snapshots().transform(transformer);
+    return nativeInstance
+        .snapshots(includeMetadataChanges: includeMetadataChanges)
+        .transform(transformer);
   }
 
   // _TODO: implement parent
@@ -472,9 +474,9 @@ class DocumentReferenceFlutter
   String toString() => 'DocRef($path)';
 }
 
-class DocumentSnapshotFlutter //with DocumentSnapshotMixin
-    implements
-        DocumentSnapshot {
+class DocumentSnapshotFlutter
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final native.DocumentSnapshot nativeInstance;
 
   DocumentSnapshotFlutter(this.nativeInstance);
