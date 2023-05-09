@@ -5,6 +5,8 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+import 'package:tekartik_firebase_firestore_flutter/src/snapshot_meta_data_flutter.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 import 'import.dart';
@@ -279,13 +281,15 @@ class QueryFlutter implements Query {
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
             EventSink<QuerySnapshot> sink) {
       sink.add(_wrapQuerySnapshot(nativeQuerySnapshot));
     });
-    return nativeInstance!.snapshots().transform(transformer);
+    return nativeInstance!
+        .snapshots(includeMetadataChanges: includeMetadataChanges)
+        .transform(transformer);
   }
 
   @override
@@ -468,7 +472,9 @@ class DocumentReferenceFlutter
   String toString() => 'DocRef($path)';
 }
 
-class DocumentSnapshotFlutter implements DocumentSnapshot {
+class DocumentSnapshotFlutter //with DocumentSnapshotMixin
+    implements
+        DocumentSnapshot {
   final native.DocumentSnapshot nativeInstance;
 
   DocumentSnapshotFlutter(this.nativeInstance);
@@ -490,6 +496,10 @@ class DocumentSnapshotFlutter implements DocumentSnapshot {
   // not supported
   @override
   Timestamp? get createTime => null;
+
+  @override
+  SnapshotMetadata get metadata =>
+      SnapshotMetaDataFlutter(nativeInstance.metadata);
 }
 
 class QuerySnapshotFlutter implements QuerySnapshot {
