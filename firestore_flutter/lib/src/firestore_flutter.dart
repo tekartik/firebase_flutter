@@ -299,6 +299,12 @@ class QueryFlutter implements Query {
   }
 
   @override
+  Query orderById({bool? descending}) {
+    return _wrapQuery(nativeInstance!
+        .orderBy(native.FieldPath.documentId, descending: descending == true));
+  }
+
+  @override
   Query select(List<String> keyPaths) {
     // not supported
     return this;
