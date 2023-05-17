@@ -109,7 +109,7 @@ extension AuthFlutterImplGoogle on Auth {
     try {
       // Once signed in, return the UserCredential
       var credentials =
-          await native.FirebaseAuth.instance.signInWithPopup(googleProvider);
+          await firebaseNativeAuth.signInWithPopup(googleProvider);
       if (_debug) {
         if (kDebugMode) {
           print('Google signed in $credentials');
@@ -123,6 +123,6 @@ extension AuthFlutterImplGoogle on Auth {
       rethrow;
     }
     // Or use signInWithRedirect
-    // return await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+    // return await FirebaseAuth.ins.instance.signInWithRedirect(googleProvider);
   }
 }
