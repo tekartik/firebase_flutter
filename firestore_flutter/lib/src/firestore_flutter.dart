@@ -5,10 +5,9 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
-import 'package:tekartik_firebase_firestore_flutter/src/snapshot_meta_data_flutter.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
+import 'document_snapshot_flutter.dart';
 import 'import.dart';
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
@@ -74,7 +73,7 @@ class FirestoreFlutter implements Firestore {
 
   @override
   DocumentReference doc(String path) =>
-      _wrapDocumentReference(nativeInstance.doc(path));
+      wrapDocumentReference(nativeInstance.doc(path));
 
   @override
   Future<T> runTransaction<T>(
@@ -312,13 +311,23 @@ class QueryFlutter implements Query {
 
   @override
   Query startAfter({DocumentSnapshot? snapshot, List? values}) {
-    return _wrapQuery(
-        nativeInstance!.startAfter(toNativeValue(values) as List));
+    if (snapshot != null) {
+      return _wrapQuery(
+          nativeInstance!.startAfterDocument(snapshot.flutter.nativeInstance));
+    } else {
+      return _wrapQuery(
+          nativeInstance!.startAfter(toNativeValue(values) as List));
+    }
   }
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List? values}) {
-    return _wrapQuery(nativeInstance!.startAt(toNativeValue(values) as List));
+    if (snapshot != null) {
+      return _wrapQuery(
+          nativeInstance!.startAtDocument(snapshot.flutter.nativeInstance));
+    } else {
+      return _wrapQuery(nativeInstance!.startAt(toNativeValue(values) as List));
+    }
   }
 
   @override
@@ -368,12 +377,12 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
-      _wrapDocumentReference(await nativeInstance!
+      wrapDocumentReference(await nativeInstance!
           .add(documentDataToFlutterData(DocumentData(data))));
 
   @override
   DocumentReference doc([String? path]) {
-    return _wrapDocumentReference(nativeInstance!.doc(path));
+    return wrapDocumentReference(nativeInstance!.doc(path));
   }
 
   @override
@@ -381,7 +390,7 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   DocumentReference get parent {
-    return _wrapDocumentReference(
+    return wrapDocumentReference(
         nativeInstance!.firestore.doc(url.dirname(path)));
   }
 
@@ -399,7 +408,7 @@ CollectionReferenceFlutter _wrapCollectionReference(
         native.CollectionReference nativeInstance) =>
     CollectionReferenceFlutter(nativeInstance);
 
-DocumentReferenceFlutter _wrapDocumentReference(
+DocumentReferenceFlutter wrapDocumentReference(
         native.DocumentReference nativeInstance) =>
     DocumentReferenceFlutter(nativeInstance);
 
@@ -478,36 +487,6 @@ class DocumentReferenceFlutter
 
   @override
   String toString() => 'DocRef($path)';
-}
-
-class DocumentSnapshotFlutter
-    with DocumentSnapshotMixin
-    implements DocumentSnapshot {
-  final native.DocumentSnapshot nativeInstance;
-
-  DocumentSnapshotFlutter(this.nativeInstance);
-
-  @override
-  Map<String, Object?> get data =>
-      documentDataFromFlutterData(nativeInstance.data() as Map).asMap();
-
-  @override
-  bool get exists => nativeInstance.exists;
-
-  @override
-  DocumentReference get ref => _wrapDocumentReference(nativeInstance.reference);
-
-  // not supported
-  @override
-  Timestamp? get updateTime => null;
-
-  // not supported
-  @override
-  Timestamp? get createTime => null;
-
-  @override
-  SnapshotMetadata get metadata =>
-      SnapshotMetaDataFlutter(nativeInstance.metadata);
 }
 
 class QuerySnapshotFlutter implements QuerySnapshot {
