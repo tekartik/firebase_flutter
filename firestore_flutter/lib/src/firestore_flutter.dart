@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.d
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
+import 'document_snapshot_flutter.dart';
 import 'import.dart';
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
@@ -72,7 +73,7 @@ class FirestoreFlutter implements Firestore {
 
   @override
   DocumentReference doc(String path) =>
-      _wrapDocumentReference(nativeInstance.doc(path));
+      wrapDocumentReference(nativeInstance.doc(path));
 
   @override
   Future<T> runTransaction<T>(
@@ -161,7 +162,7 @@ class WriteBatchFlutter implements WriteBatch {
 }
 
 // for both native and not
-bool isCommonValue(value) {
+bool isCommonValue(Object? value) {
   return (value == null ||
       value is String ||
       // value is DateTime ||
@@ -172,7 +173,7 @@ bool isCommonValue(value) {
 List<Object?>? toNativeValues(Iterable<Object?>? values) =>
     values?.map((e) => toNativeValue(e)).toList(growable: false);
 
-dynamic toNativeValue(value) {
+dynamic toNativeValue(Object? value) {
   if (isCommonValue(value)) {
     return value;
   } else if (value is Timestamp) {
@@ -206,7 +207,7 @@ dynamic toNativeValue(value) {
   throw 'not supported $value type ${value.runtimeType}';
 }
 
-dynamic fromNativeValue(nativeValue) {
+dynamic fromNativeValue(Object? nativeValue) {
   if (isCommonValue(nativeValue)) {
     return nativeValue;
   }
@@ -279,19 +280,27 @@ class QueryFlutter implements Query {
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
             EventSink<QuerySnapshot> sink) {
       sink.add(_wrapQuerySnapshot(nativeQuerySnapshot));
     });
-    return nativeInstance!.snapshots().transform(transformer);
+    return nativeInstance!
+        .snapshots(includeMetadataChanges: includeMetadataChanges)
+        .transform(transformer);
   }
 
   @override
   Query orderBy(String key, {bool? descending}) {
     return _wrapQuery(
         nativeInstance!.orderBy(key, descending: descending == true));
+  }
+
+  @override
+  Query orderById({bool? descending}) {
+    return _wrapQuery(nativeInstance!
+        .orderBy(native.FieldPath.documentId, descending: descending == true));
   }
 
   @override
@@ -302,13 +311,23 @@ class QueryFlutter implements Query {
 
   @override
   Query startAfter({DocumentSnapshot? snapshot, List? values}) {
-    return _wrapQuery(
-        nativeInstance!.startAfter(toNativeValue(values) as List));
+    if (snapshot != null) {
+      return _wrapQuery(
+          nativeInstance!.startAfterDocument(snapshot.flutter.nativeInstance));
+    } else {
+      return _wrapQuery(
+          nativeInstance!.startAfter(toNativeValue(values) as List));
+    }
   }
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List? values}) {
-    return _wrapQuery(nativeInstance!.startAt(toNativeValue(values) as List));
+    if (snapshot != null) {
+      return _wrapQuery(
+          nativeInstance!.startAtDocument(snapshot.flutter.nativeInstance));
+    } else {
+      return _wrapQuery(nativeInstance!.startAt(toNativeValue(values) as List));
+    }
   }
 
   @override
@@ -358,12 +377,12 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
-      _wrapDocumentReference(await nativeInstance!
+      wrapDocumentReference(await nativeInstance!
           .add(documentDataToFlutterData(DocumentData(data))));
 
   @override
   DocumentReference doc([String? path]) {
-    return _wrapDocumentReference(nativeInstance!.doc(path));
+    return wrapDocumentReference(nativeInstance!.doc(path));
   }
 
   @override
@@ -371,7 +390,7 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   DocumentReference get parent {
-    return _wrapDocumentReference(
+    return wrapDocumentReference(
         nativeInstance!.firestore.doc(url.dirname(path)));
   }
 
@@ -389,7 +408,7 @@ CollectionReferenceFlutter _wrapCollectionReference(
         native.CollectionReference nativeInstance) =>
     CollectionReferenceFlutter(nativeInstance);
 
-DocumentReferenceFlutter _wrapDocumentReference(
+DocumentReferenceFlutter wrapDocumentReference(
         native.DocumentReference nativeInstance) =>
     DocumentReferenceFlutter(nativeInstance);
 
@@ -438,13 +457,15 @@ class DocumentReferenceFlutter
   String get id => nativeInstance.id;
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {
       sink.add(_wrapDocumentSnapshot(nativeDocumentSnapshot));
     });
-    return nativeInstance.snapshots().transform(transformer);
+    return nativeInstance
+        .snapshots(includeMetadataChanges: includeMetadataChanges)
+        .transform(transformer);
   }
 
   // _TODO: implement parent
@@ -466,30 +487,6 @@ class DocumentReferenceFlutter
 
   @override
   String toString() => 'DocRef($path)';
-}
-
-class DocumentSnapshotFlutter implements DocumentSnapshot {
-  final native.DocumentSnapshot nativeInstance;
-
-  DocumentSnapshotFlutter(this.nativeInstance);
-
-  @override
-  Map<String, Object?> get data =>
-      documentDataFromFlutterData(nativeInstance.data() as Map).asMap();
-
-  @override
-  bool get exists => nativeInstance.exists;
-
-  @override
-  DocumentReference get ref => _wrapDocumentReference(nativeInstance.reference);
-
-  // not supported
-  @override
-  Timestamp? get updateTime => null;
-
-  // not supported
-  @override
-  Timestamp? get createTime => null;
 }
 
 class QuerySnapshotFlutter implements QuerySnapshot {

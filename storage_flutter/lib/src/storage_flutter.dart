@@ -36,7 +36,8 @@ StorageServiceFlutter get storageServiceFlutter =>
 Future<native.Reference> getReferenceFromName(
     BucketFlutter bucket, String name) async {
   var ref = bucket.storage.firebaseStorage
-      .refFromURL(StorageFileRef(bucket.name, name).toLink().toString());
+      .refFromURL(StorageFileRef(bucket.name, '').toLink().toString())
+      .child(name);
   return ref;
 }
 
