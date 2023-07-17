@@ -98,7 +98,7 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
 
   @override
   Future<String> getIdToken({bool? forceRefresh}) async =>
-      await nativeInstance.getIdToken(forceRefresh ?? false);
+      (await nativeInstance.getIdToken(forceRefresh ?? false))!;
 }
 
 class AuthFlutterImpl with AuthMixin implements AuthFlutter {
