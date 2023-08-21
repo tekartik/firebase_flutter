@@ -18,7 +18,7 @@ FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -26,10 +26,12 @@ class FirestoreServiceFlutter
       assert(app is AppFlutter, 'invalid firebase app type');
       var appFlutter = app as AppFlutter;
       if (appFlutter.isDefault!) {
-        return FirestoreFlutter(native.FirebaseFirestore.instance);
+        return FirestoreFlutter(this, native.FirebaseFirestore.instance);
       } else {
-        return FirestoreFlutter(native.FirebaseFirestore.instanceFor(
-            app: appFlutter.nativeInstance!));
+        return FirestoreFlutter(
+            this,
+            native.FirebaseFirestore.instanceFor(
+                app: appFlutter.nativeInstance!));
       }
     });
   }
@@ -60,9 +62,10 @@ class FirestoreServiceFlutter
 }
 
 class FirestoreFlutter implements Firestore {
+  final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
 
-  FirestoreFlutter(this.nativeInstance);
+  FirestoreFlutter(this.service, this.nativeInstance);
 
   @override
   WriteBatch batch() => WriteBatchFlutter(nativeInstance.batch());
