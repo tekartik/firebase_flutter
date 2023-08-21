@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:path/path.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 import 'document_snapshot_flutter.dart';
 import 'import.dart';
+import 'import_firestore.dart';
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
 
@@ -441,7 +438,7 @@ DocumentChangeType? _wrapDocumentChangeType(
 }
 
 class DocumentReferenceFlutter
-    with PathReferenceFlutterMixin
+    with DocumentReferenceDefaultMixin, PathReferenceFlutterMixin
     implements DocumentReference {
   final native.DocumentReference nativeInstance;
 
