@@ -2,13 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:path/path.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 import 'document_snapshot_flutter.dart';
 import 'import.dart';
+import 'import_firestore.dart';
 
 FirestoreServiceFlutter? _firestoreServiceFlutter;
 
@@ -18,7 +16,7 @@ FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -26,10 +24,12 @@ class FirestoreServiceFlutter
       assert(app is AppFlutter, 'invalid firebase app type');
       var appFlutter = app as AppFlutter;
       if (appFlutter.isDefault!) {
-        return FirestoreFlutter(native.FirebaseFirestore.instance);
+        return FirestoreFlutter(this, native.FirebaseFirestore.instance);
       } else {
-        return FirestoreFlutter(native.FirebaseFirestore.instanceFor(
-            app: appFlutter.nativeInstance!));
+        return FirestoreFlutter(
+            this,
+            native.FirebaseFirestore.instanceFor(
+                app: appFlutter.nativeInstance!));
       }
     });
   }
@@ -59,10 +59,12 @@ class FirestoreServiceFlutter
   bool get supportsTrackChanges => true;
 }
 
-class FirestoreFlutter implements Firestore {
+class FirestoreFlutter with FirestoreDefaultMixin implements Firestore {
+  @override
+  final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
 
-  FirestoreFlutter(this.nativeInstance);
+  FirestoreFlutter(this.service, this.nativeInstance);
 
   @override
   WriteBatch batch() => WriteBatchFlutter(nativeInstance.batch());
@@ -436,7 +438,7 @@ DocumentChangeType? _wrapDocumentChangeType(
 }
 
 class DocumentReferenceFlutter
-    with PathReferenceFlutterMixin
+    with DocumentReferenceDefaultMixin, PathReferenceFlutterMixin
     implements DocumentReference {
   final native.DocumentReference nativeInstance;
 
