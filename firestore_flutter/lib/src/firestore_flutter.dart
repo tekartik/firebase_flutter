@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 import 'document_snapshot_flutter.dart';
@@ -61,7 +62,8 @@ class FirestoreServiceFlutter
   bool get supportsTrackChanges => true;
 }
 
-class FirestoreFlutter implements Firestore {
+class FirestoreFlutter with FirestoreDefaultMixin implements Firestore {
+  @override
   final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
 
