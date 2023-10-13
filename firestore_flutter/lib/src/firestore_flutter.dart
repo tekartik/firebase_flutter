@@ -253,7 +253,7 @@ DocumentData documentDataFromFlutterData(Map nativeMap) {
 QueryFlutter _wrapQuery(native.Query nativeInstance) =>
     QueryFlutter(nativeInstance);
 
-class QueryFlutter implements Query {
+class QueryFlutter with FirestoreQueryExecutorMixin implements Query {
   final native.Query? nativeInstance;
 
   QueryFlutter(this.nativeInstance);
