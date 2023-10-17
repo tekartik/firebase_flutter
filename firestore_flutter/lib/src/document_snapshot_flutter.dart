@@ -8,19 +8,22 @@ import 'firestore_flutter.dart';
 class DocumentSnapshotFlutter
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
+  final Firestore firestore;
   final native.DocumentSnapshot nativeInstance;
 
-  DocumentSnapshotFlutter(this.nativeInstance);
+  DocumentSnapshotFlutter(this.firestore, this.nativeInstance);
 
   @override
   Map<String, Object?> get data =>
-      documentDataFromFlutterData(nativeInstance.data() as Map).asMap();
+      documentDataFromFlutterData(firestore, nativeInstance.data() as Map)
+          .asMap();
 
   @override
   bool get exists => nativeInstance.exists;
 
   @override
-  DocumentReference get ref => wrapDocumentReference(nativeInstance.reference);
+  DocumentReference get ref =>
+      wrapDocumentReference(firestore, nativeInstance.reference);
 
   // not supported
   @override
