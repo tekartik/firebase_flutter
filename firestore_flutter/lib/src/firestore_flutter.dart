@@ -381,8 +381,7 @@ class CollectionReferenceFlutter extends QueryFlutter
     with PathReferenceFlutterMixin
     implements CollectionReference {
   CollectionReferenceFlutter(
-      Firestore firestore, native.CollectionReference nativeInstance)
-      : super(firestore, nativeInstance);
+      super.firestore, native.CollectionReference super.nativeInstance);
 
   @override
   native.CollectionReference? get nativeInstance =>
