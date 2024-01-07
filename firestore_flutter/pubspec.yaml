@@ -23,7 +23,7 @@ dependencies:
       path: firebase_flutter
       ref: dart3a
     version: '>=0.6.0'
-  cloud_firestore: '>=4.13.2'
+  cloud_firestore: '>=4.14.0'
 
 dev_dependencies:
   flutter_test:
