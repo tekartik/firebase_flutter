@@ -25,7 +25,7 @@ dependencies:
   firebase_storage: '>=7.0.0'
 
 dev_dependencies:
-  dev_test:
+  dev_build:
   flutter_test:
     sdk: flutter
   process_run: '>=0.10.2'
