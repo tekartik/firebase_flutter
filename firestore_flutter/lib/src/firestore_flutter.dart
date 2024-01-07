@@ -284,7 +284,7 @@ class QueryFlutter with FirestoreQueryExecutorMixin implements Query {
 
   /// Simplifies aggregate response.
   @override
-  Future<int> count() async => (await nativeInstance.count().get()).count;
+  Future<int> count() async => (await nativeInstance.count().get()).count!;
 
   @override
   Query limit(int limit) {
