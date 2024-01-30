@@ -14,3 +14,4 @@ pubspec.lock
 android/
 ios/
 /.flutter-plugins-dependencies
+/pubspec_overrides.yaml
