@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
+import 'aggregate_query_flutter.dart';
 import 'document_snapshot_flutter.dart';
 import 'import.dart';
 import 'import_firestore.dart';
@@ -62,6 +63,9 @@ class FirestoreServiceFlutter
 
   @override
   bool get supportsTrackChanges => true;
+
+  @override
+  bool get supportsAggregateQueries => true;
 }
 
 class FirestoreFlutter with FirestoreDefaultMixin implements Firestore {
@@ -393,6 +397,11 @@ class QueryFlutter
             arrayContainsAny: toNativeValues(arrayContainsAny),
             whereIn: toNativeValues(whereIn),
             isNull: isNull));
+  }
+
+  @override
+  AggregateQuery aggregate(List<AggregateField> fields) {
+    return AggregateQueryFlutter(this, fields);
   }
 }
 

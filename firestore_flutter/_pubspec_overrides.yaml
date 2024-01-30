@@ -1,0 +1,5 @@
+dependency_overrides:
+  tekartik_firebase_flutter:
+    path: ../firebase_flutter
+  tekartik_firebase_firestore:
+    path: ../../firebase_firestore.dart/firestore
