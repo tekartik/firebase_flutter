@@ -21,7 +21,7 @@ dependencies:
       path: firebase_flutter
       ref: dart3a
     version: '>=0.4.0+0'
-  firebase_auth: '>=4.11.1'
+  firebase_auth: ^4.17.6
   google_sign_in: '>=5.4.2'
 dev_dependencies:
   flutter_test:
