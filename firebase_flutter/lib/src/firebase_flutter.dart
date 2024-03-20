@@ -5,21 +5,49 @@ import 'package:tekartik_firebase/firebase.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase/src/firebase_mixin.dart';
 
-AppOptions _fromNativeOption(flutter.FirebaseOptions fbOptions) {
-  var options = AppOptions(
-      apiKey: fbOptions.apiKey,
-      storageBucket: fbOptions.storageBucket,
-      projectId: fbOptions.projectId,
-      databaseURL: fbOptions.databaseURL);
-  return options;
+class _FirebaseAppOptionsFlutter with FirebaseAppOptionsMixin {
+  final flutter.FirebaseOptions nativeInstance;
+
+  _FirebaseAppOptionsFlutter(this.nativeInstance);
+
+  @override
+  String? get apiKey => nativeInstance.apiKey;
+
+  @override
+  String? get appId => nativeInstance.appId;
+
+  @override
+  String? get authDomain => nativeInstance.authDomain;
+
+  @override
+  String? get databaseURL => nativeInstance.databaseURL;
+
+  @override
+  String? get measurementId => nativeInstance.measurementId;
+
+  @override
+  String? get messagingSenderId => nativeInstance.messagingSenderId;
+
+  @override
+  String? get projectId => nativeInstance.projectId;
+
+  @override
+  String? get storageBucket => nativeInstance.storageBucket;
+
+  @override
+  Map<String, Object?> toDebugMap() => nativeInstance.asMap;
 }
 
-class FirebaseFlutter implements FirebaseAsync, Firebase {
+class _FirebaseFlutter implements FirebaseFlutter {
   @override
   Future<App> initializeAppAsync({AppOptions? options, String? name}) async {
     flutter.FirebaseApp nativeApp;
     var isDefault = false;
     if (options != null) {
+      if (options is _FirebaseAppOptionsFlutter) {
+        nativeApp = await flutter.Firebase.initializeApp(
+            name: name, options: options.nativeInstance);
+      } else
       // If empty (checking only projectId)
       // clone the existing options
       if (options.projectId == null) {
@@ -38,9 +66,9 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
       isDefault = true;
       nativeApp = await flutter.Firebase.initializeApp(name: name);
     }
-    options = _fromNativeOption(nativeApp.options);
+    options = wrapOptions(nativeApp.options);
 
-    return AppFlutter(
+    return _FirebaseAppFlutter(
         nativeInstance: nativeApp, options: options, isDefault: isDefault);
   }
 
@@ -49,8 +77,8 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
     if (options == null && name == null) {
       // TODO 2020-08-26 if this fail, consider calling async method only
       var nativeApp = flutter.Firebase.app();
-      options = _fromNativeOption(nativeApp.options);
-      return AppFlutter(
+      options = wrapOptions(nativeApp.options);
+      return _FirebaseAppFlutter(
           nativeInstance: nativeApp, options: options, isDefault: true);
     } else {
       throw 'not supported, use async method';
@@ -61,9 +89,9 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
   App app({String? name}) {
     if (name == null) {
       var nativeApp = flutter.Firebase.app();
-      return AppFlutter(
+      return _FirebaseAppFlutter(
           nativeInstance: nativeApp,
-          options: _fromNativeOption(nativeApp.options),
+          options: wrapOptions(nativeApp.options),
           isDefault: true);
     }
     throw UnsupportedError(
@@ -74,13 +102,14 @@ class FirebaseFlutter implements FirebaseAsync, Firebase {
   Future<App> appAsync({String? name}) async => initializeAppAsync(name: name);
 }
 
-class AppFlutter with FirebaseAppMixin {
+class _FirebaseAppFlutter with FirebaseAppMixin {
   final bool? isDefault;
   @override
   final AppOptions options;
   final flutter.FirebaseApp? nativeInstance;
 
-  AppFlutter({this.nativeInstance, required this.options, this.isDefault});
+  _FirebaseAppFlutter(
+      {this.nativeInstance, required this.options, this.isDefault});
 
   @override
   Future delete() async {
@@ -96,6 +125,19 @@ class AppFlutter with FirebaseAppMixin {
   String toString() => 'AppFlutter($name)';
 }
 
+/// Firebase flutter extension.
+extension FirebaseFlutterExtension on Firebase {
+  /// Wrap a native options.
+  FirebaseAppOptions wrapOptions(flutter.FirebaseOptions fbOptions) {
+    var options = _FirebaseAppOptionsFlutter(fbOptions);
+    return options;
+  }
+}
+
+/// Firebase flutter.
+abstract class FirebaseFlutter implements FirebaseAsync, Firebase {}
+
 FirebaseFlutter? _firebaseFlutter;
 
-FirebaseFlutter get firebaseFlutter => _firebaseFlutter ??= FirebaseFlutter();
+/// The firebase flutter service.
+FirebaseFlutter get firebaseFlutter => _firebaseFlutter ??= _FirebaseFlutter();
