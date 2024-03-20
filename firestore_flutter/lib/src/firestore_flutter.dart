@@ -27,8 +27,8 @@ class FirestoreServiceFlutter
   @override
   Firestore firestore(App app) {
     return getInstance(app, () {
-      assert(app is AppFlutter, 'invalid firebase app type');
-      var appFlutter = app as AppFlutter;
+      assert(app is FirebaseAppFlutter, 'invalid firebase app type');
+      var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
         return FirestoreFlutter(this, native.FirebaseFirestore.instance);
       } else {

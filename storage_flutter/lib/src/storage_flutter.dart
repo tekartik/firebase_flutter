@@ -16,8 +16,8 @@ class StorageServiceFlutter with StorageServiceMixin implements StorageService {
   @override
   Storage storage(App app) {
     return getInstance(app, () {
-      assert(app is AppFlutter, 'invalid firebase app type');
-      var appFlutter = app as AppFlutter;
+      assert(app is FirebaseAppFlutter, 'invalid firebase app type');
+      var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
         return StorageFlutter(native.FirebaseStorage.instance);
       } else {

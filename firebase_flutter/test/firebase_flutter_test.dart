@@ -1,9 +1,9 @@
 library tekartik_firebase_flutter.test.firebase_flutter_test;
 
+import 'package:firebase_core/firebase_core.dart' as core;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
-import 'package:firebase_core/firebase_core.dart' as core;
 
 void main() {
   group('firebase_flutter', () {

@@ -18,8 +18,9 @@ class AuthServiceFlutterImpl
   @override
   Auth auth(common.App app) {
     return getInstance(app, () {
-      assert(app is firebase_flutter.AppFlutter, 'invalid firebase app type');
-      final appFlutter = app as firebase_flutter.AppFlutter;
+      assert(app is firebase_flutter.FirebaseAppFlutter,
+          'invalid firebase app type');
+      final appFlutter = app as firebase_flutter.FirebaseAppFlutter;
       return AuthFlutterImpl(
           native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance!));
     });

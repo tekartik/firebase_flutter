@@ -5,6 +5,10 @@ import 'package:tekartik_firebase/firebase.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase/src/firebase_mixin.dart';
 
+/// Compat to deprecate
+@Deprecated('To deprecated since 2024-03-20')
+typedef AppFlutter = FirebaseAppFlutter;
+
 class _FirebaseAppOptionsFlutter with FirebaseAppOptionsMixin {
   final flutter.FirebaseOptions nativeInstance;
 
@@ -102,10 +106,21 @@ class _FirebaseFlutter implements FirebaseFlutter {
   Future<App> appAsync({String? name}) async => initializeAppAsync(name: name);
 }
 
-class _FirebaseAppFlutter with FirebaseAppMixin {
+/// Firebase app flutter
+abstract class FirebaseAppFlutter {
+  /// Native instances if any.
+  flutter.FirebaseApp? get nativeInstance;
+
+  /// True if default app/
+  bool? get isDefault;
+}
+
+class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
+  @override
   final bool? isDefault;
   @override
   final AppOptions options;
+  @override
   final flutter.FirebaseApp? nativeInstance;
 
   _FirebaseAppFlutter(

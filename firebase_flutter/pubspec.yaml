@@ -1,6 +1,6 @@
 name: tekartik_firebase_flutter
 description: Firebase flutter
-version: 0.8.4
+version: 0.8.4+1
 publish_to: none
 environment:
   sdk: '>=3.0.0 <4.0.0'
