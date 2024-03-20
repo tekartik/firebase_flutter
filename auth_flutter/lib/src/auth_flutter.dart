@@ -245,3 +245,17 @@ class AuthSignInResultFlutter implements AuthSignInResult {
   @override
   bool get hasInfo => true;
 }
+
+/// Helpers
+extension FirebaseAuthFlutterExtension on Auth {
+  /// Web only
+  void webSetIndexedDbPersistence() {
+    if (kIsWeb && this is AuthFlutterImpl) {
+      (this as AuthFlutterImpl)
+          .nativeAuth
+          .setPersistence(native.Persistence.LOCAL); // indexedDB
+    }
+  }
+
+  AuthFlutter get flutter => this as AuthFlutter;
+}

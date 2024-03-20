@@ -8,6 +8,9 @@ void main() async {
     test('factory', () {
       expect(authServiceFlutter.supportsListUsers, isFalse);
       expect(authServiceFlutter.supportsCurrentUser, isTrue);
+      AuthFlutter? authFlutter;
+      // ignore: dead_code
+      authFlutter?.webSetIndexedDbPersistence();
     });
   });
 }

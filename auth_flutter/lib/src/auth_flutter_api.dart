@@ -14,7 +14,7 @@ class AuthSignInOptionsWeb implements AuthSignInOptions {
   }
 }
 
-abstract class AuthFlutter {
+abstract class AuthFlutter implements Auth {
   Future<User?> googleSignIn();
 }
 
