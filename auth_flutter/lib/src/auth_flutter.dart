@@ -62,6 +62,9 @@ class UserCredentialFlutter implements UserCredential {
 
   @override
   User get user => _user ??= wrapUser(nativeInstance.user)!;
+
+  @override
+  String toString() => 'UserCredentialFlutter($user)';
 }
 
 class UserFlutterImpl implements User, UserInfoWithIdToken {
@@ -113,6 +116,16 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
         nativeAuth.authStateChanges().listen((user) {
       currentUserAdd(wrapUser(user));
     });
+  }
+
+  @override
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    var userCredential = await nativeAuth.signInWithEmailAndPassword(
+        email: email, password: password);
+    return UserCredentialFlutter(userCredential);
   }
 
   AuthFlutterImpl(this.nativeAuth) {
