@@ -262,9 +262,9 @@ class AuthSignInResultFlutter implements AuthSignInResult {
 /// Helpers
 extension FirebaseAuthFlutterExtension on Auth {
   /// Web only
-  void webSetIndexedDbPersistence() {
+  Future<void> webSetIndexedDbPersistence() async {
     if (kIsWeb && this is AuthFlutterImpl) {
-      (this as AuthFlutterImpl)
+      await (this as AuthFlutterImpl)
           .nativeAuth
           .setPersistence(native.Persistence.LOCAL); // indexedDB
     }
