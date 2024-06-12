@@ -39,3 +39,5 @@ dev_dependencies:
 dependency_overrides:
   tekartik_firebase_flutter:
     path: ../firebase_flutter
+#  tekartik_firebase_storage:
+#    path: ../../firebase_storage.dart/storage
