@@ -1,0 +1,7 @@
+# tekartik flutter recommended lints (extension over google lints and pedantic)
+include: package:tekartik_lints_flutter/strict.yaml
+
+linter:
+  rules:
+    - package_api_docs
+    - public_member_api_docs

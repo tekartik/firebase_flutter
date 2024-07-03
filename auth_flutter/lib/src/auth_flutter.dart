@@ -98,7 +98,8 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   String get uid => nativeInstance.uid;
 
   @override
-  String toString() => '$displayName ($email)';
+  String toString() =>
+      '$uid${displayName != null ? ' $displayName' : ''} ($email)';
 
   @override
   Future<String> getIdToken({bool? forceRefresh}) async =>

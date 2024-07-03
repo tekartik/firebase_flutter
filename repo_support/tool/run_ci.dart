@@ -9,6 +9,7 @@ Future<void> main() async {
     'firestore_flutter',
     'firebase_flutter',
     'auth_flutter',
+    'functions_call_flutter'
   ]) {
     await packageRunCi(join(topDir, dir));
   }

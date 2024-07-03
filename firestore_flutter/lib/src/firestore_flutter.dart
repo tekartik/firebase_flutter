@@ -22,10 +22,12 @@ FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
-    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
+    with
+        FirestoreServiceDefaultMixin,
+        FirebaseProductServiceMixin<FirestoreFlutter>
     implements FirestoreService {
   @override
-  Firestore firestore(App app) {
+  FirestoreFlutter firestore(App app) {
     return getInstance(app, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
