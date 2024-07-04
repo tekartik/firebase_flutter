@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart' as native;
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
@@ -16,22 +17,32 @@ FirebaseFunctionsCallService get firebaseFunctionsCallServiceFlutter =>
 
 /// Firebase functions call service flutter
 class FirebaseFunctionsCallServiceFlutter
-    with FirebaseProductServiceMixin<FirebaseFunctionsCallFlutter>
     implements FirebaseFunctionsCallService {
+  /// Most implementation need a single instance, keep it in memory!
+  final _instances = <String, FirebaseFunctionsCallFlutter>{};
+
+  FirebaseFunctionsCallFlutter _getInstance(App app, String region,
+      FirebaseFunctionsCallFlutter Function() createIfNotFound) {
+    var key = '${app.name}_$region';
+    var instance = _instances[key];
+    if (instance == null) {
+      var newInstance = instance = createIfNotFound();
+      _instances[key] = newInstance;
+    }
+    return instance;
+  }
+
   @override
-  FirebaseFunctionsCallFlutter functionsCall(App app) {
-    return getInstance(app, () {
+  FirebaseFunctionsCallFlutter functionsCall(App app,
+      {required String region}) {
+    return _getInstance(app, region, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
-      if (appFlutter.isDefault!) {
-        return FirebaseFunctionsCallFlutter(
-            this, native.FirebaseFunctions.instance);
-      } else {
-        return FirebaseFunctionsCallFlutter(
-            this,
-            native.FirebaseFunctions.instanceFor(
-                app: appFlutter.nativeInstance!));
-      }
+
+      return FirebaseFunctionsCallFlutter(
+          this,
+          native.FirebaseFunctions.instanceFor(
+              app: appFlutter.nativeInstance!, region: region));
     });
   }
 }

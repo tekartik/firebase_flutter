@@ -26,6 +26,15 @@ dependencies:
       url: https://github.com/tekartik/firebase.dart
       ref: dart3a
       path: firebase
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart3a
+  tekartik_firebase_functions:
+    git:
+      url: https://github.com/tekartik/firebase_functions.dart
+      ref: dart3a
+      path: firebase_functions
 dev_dependencies:
   flutter_test:
     sdk: flutter

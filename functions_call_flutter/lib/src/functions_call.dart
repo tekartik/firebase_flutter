@@ -14,6 +14,10 @@ class FirebaseFunctionsCallableOptions {
 
   /// Sets whether or not to use limited-use App Check tokens when invoking the associated function.
   bool limitedUseAppCheckToken;
+
+  @override
+  String toString() =>
+      'FirebaseFunctionsCallableOptions(timeout: $timeout${limitedUseAppCheckToken == true ? ', limitedUseAppCheckToken: $limitedUseAppCheckToken' : ''})';
 }
 
 /// Firebase functions call
@@ -72,15 +76,16 @@ mixin FirebaseFunctionsCallDefaultMixin implements FirebaseFunctionsCall {
 /// Firebase functions call service
 abstract class FirebaseFunctionsCallService {
   /// Get the firebase functions call instance
-  FirebaseFunctionsCall functionsCall(App app);
+  FirebaseFunctionsCall functionsCall(App app, {required String region});
 }
 
 /// Firebase functions call service default mixin
 mixin FirebaseFunctionsCallServiceDefaultMixin
     implements FirebaseFunctionsCallService {
   @override
-  FirebaseFunctionsCall functionsCall(App app) {
-    throw UnimplementedError('FirebaseFunctionsCallService.functionsCall');
+  FirebaseFunctionsCall functionsCall(App app, {required String region}) {
+    throw UnimplementedError(
+        'FirebaseFunctionsCallService.functionsCall(${app.name}, $region)');
   }
 }
 
