@@ -9,7 +9,7 @@ class DocumentSnapshotFlutter
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
   final Firestore firestore;
-  final native.DocumentSnapshot nativeInstance;
+  final native.DocumentSnapshot<Map<String, Object?>> nativeInstance;
 
   DocumentSnapshotFlutter(this.firestore, this.nativeInstance);
 

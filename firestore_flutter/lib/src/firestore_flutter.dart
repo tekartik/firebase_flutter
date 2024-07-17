@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
-import 'package:meta/meta.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
@@ -237,7 +235,8 @@ dynamic fromNativeValue(Firestore firestore, Object? nativeValue) {
   } else if (native.FieldValue.serverTimestamp() == nativeValue) {
     return FieldValue.serverTimestamp;
   } else if (nativeValue is native.DocumentReference) {
-    return DocumentReferenceFlutter(firestore, nativeValue);
+    return DocumentReferenceFlutter(firestore,
+        (nativeValue as native.DocumentReference<Map<String, Object?>>));
   } else if (nativeValue is native.Blob) {
     return Blob(nativeValue.bytes);
   } else if (nativeValue is native.GeoPoint) {
@@ -262,7 +261,8 @@ DocumentData documentDataFromFlutterData(Firestore firestore, Map nativeMap) {
   return DocumentData(map);
 }
 
-QueryFlutter _wrapQuery(Firestore firestore, native.Query nativeInstance) =>
+QueryFlutter _wrapQuery(Firestore firestore,
+        native.Query<Map<String, Object?>> nativeInstance) =>
     QueryFlutter(firestore, nativeInstance);
 
 class QueryFlutter
@@ -270,7 +270,7 @@ class QueryFlutter
     implements Query {
   @override
   final Firestore firestore;
-  final native.Query nativeInstance;
+  final native.Query<Map<String, Object?>> nativeInstance;
 
   QueryFlutter(this.firestore, this.nativeInstance);
 
@@ -421,12 +421,12 @@ mixin PathReferenceFlutterMixin {
 class CollectionReferenceFlutter extends QueryFlutter
     with PathReferenceFlutterMixin
     implements CollectionReference {
-  CollectionReferenceFlutter(
-      super.firestore, native.CollectionReference super.nativeInstance);
+  CollectionReferenceFlutter(super.firestore,
+      native.CollectionReference<Map<String, Object?>> super.nativeInstance);
 
   @override
-  native.CollectionReference get nativeInstance =>
-      super.nativeInstance as native.CollectionReference;
+  native.CollectionReference<Map<String, Object?>> get nativeInstance =>
+      super.nativeInstance as native.CollectionReference<Map<String, Object?>>;
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
@@ -460,27 +460,28 @@ class CollectionReferenceFlutter extends QueryFlutter
   String toString() => 'CollRef($path)';
 }
 
-native.DocumentReference? _unwrapDocumentReference(DocumentReference ref) =>
+native.DocumentReference<Map<String, Object?>>? _unwrapDocumentReference(
+        DocumentReference ref) =>
     (ref as DocumentReferenceFlutter).nativeInstance;
 
-CollectionReferenceFlutter _wrapCollectionReference(
-        Firestore firestore, native.CollectionReference nativeInstance) =>
+CollectionReferenceFlutter _wrapCollectionReference(Firestore firestore,
+        native.CollectionReference<Map<String, Object?>> nativeInstance) =>
     CollectionReferenceFlutter(firestore, nativeInstance);
 
-DocumentReferenceFlutter wrapDocumentReference(
-        Firestore firestore, native.DocumentReference nativeInstance) =>
+DocumentReferenceFlutter wrapDocumentReference(Firestore firestore,
+        native.DocumentReference<Map<String, Object?>> nativeInstance) =>
     DocumentReferenceFlutter(firestore, nativeInstance);
 
-QuerySnapshotFlutter _wrapQuerySnapshot(
-        Firestore firestore, native.QuerySnapshot nativeInstance) =>
+QuerySnapshotFlutter _wrapQuerySnapshot(Firestore firestore,
+        native.QuerySnapshot<Map<String, Object?>> nativeInstance) =>
     QuerySnapshotFlutter(firestore, nativeInstance);
 
-DocumentSnapshotFlutter _wrapDocumentSnapshot(
-        Firestore firestore, native.DocumentSnapshot nativeInstance) =>
+DocumentSnapshotFlutter _wrapDocumentSnapshot(Firestore firestore,
+        native.DocumentSnapshot<Map<String, Object?>> nativeInstance) =>
     DocumentSnapshotFlutter(firestore, nativeInstance);
 
-DocumentChangeFlutter _wrapDocumentChange(
-        Firestore firestore, native.DocumentChange nativeInstance) =>
+DocumentChangeFlutter _wrapDocumentChange(Firestore firestore,
+        native.DocumentChange<Map<String, Object?>> nativeInstance) =>
     DocumentChangeFlutter(firestore, nativeInstance);
 
 DocumentChangeType? _wrapDocumentChangeType(
@@ -500,7 +501,7 @@ class DocumentReferenceFlutter
     implements DocumentReference {
   @override
   final Firestore firestore;
-  final native.DocumentReference nativeInstance;
+  final native.DocumentReference<Map<String, Object?>> nativeInstance;
 
   DocumentReferenceFlutter(this.firestore, this.nativeInstance);
 
@@ -523,7 +524,16 @@ class DocumentReferenceFlutter
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {
-      sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
+      // devPrint('$this onSnapshot ${nativeDocumentSnapshot.data()}');
+      try {
+        sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
+      } catch (e) {
+        if (kDebugMode) {
+          print(
+              'onSnapshot.error ${nativeDocumentSnapshot.reference.path}: $e');
+        }
+        rethrow;
+      }
     });
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
@@ -553,7 +563,7 @@ class DocumentReferenceFlutter
 
 class QuerySnapshotFlutter implements QuerySnapshot {
   final Firestore firestore;
-  final native.QuerySnapshot nativeInstance;
+  final native.QuerySnapshot<Map<String, Object?>> nativeInstance;
 
   QuerySnapshotFlutter(this.firestore, this.nativeInstance);
 
@@ -570,7 +580,7 @@ class QuerySnapshotFlutter implements QuerySnapshot {
 
 class DocumentChangeFlutter implements DocumentChange {
   final Firestore firestore;
-  final native.DocumentChange nativeInstance;
+  final native.DocumentChange<Map<String, Object?>> nativeInstance;
 
   DocumentChangeFlutter(this.firestore, this.nativeInstance);
 
