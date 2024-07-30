@@ -4,18 +4,23 @@ import 'package:tekartik_firebase_auth/auth.dart';
 class AuthSignInOptionsWeb implements AuthSignInOptions {
   late bool _isPopup;
 
-  // Default
+  /// True if it is a popup
   bool get isPopup => _isPopup == true;
 
+  /// True if it is a redirect
   bool get isRedirect => _isPopup != true;
 
+  /// Constructor
   AuthSignInOptionsWeb({bool isPopup = false, bool isRedirect = false}) {
     _isPopup = !isRedirect;
   }
 }
 
+/// Browser sign in result
 abstract class AuthFlutter implements Auth {
+  /// Sign in with popup
   Future<User?> googleSignIn();
 }
 
+/// Auth service for flutter
 abstract class AuthServiceFlutter implements AuthService {}

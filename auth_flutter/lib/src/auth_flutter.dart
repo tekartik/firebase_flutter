@@ -12,6 +12,7 @@ import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
 import 'import.dart' as common;
 import 'import.dart';
 
+/// Flutter impl
 class AuthServiceFlutterImpl
     with AuthServiceMixin
     implements AuthServiceFlutter {
@@ -35,16 +36,20 @@ class AuthServiceFlutterImpl
 
 AuthServiceFlutter? _firebaseAuthServiceFlutter;
 
+/// The flutter auth service
 AuthServiceFlutter get authService =>
     _firebaseAuthServiceFlutter ??= AuthServiceFlutterImpl();
 
-UserFlutterImpl? wrapUser(native.User? nativeUser) =>
-    nativeUser != null ? UserFlutterImpl(nativeUser) : null;
+/// Wearp native user.
+User? wrapUser(native.User? nativeUser) =>
+    nativeUser != null ? _UserFlutterImpl(nativeUser) : null;
 
 /// Flutter impl
 class AuthCredentialFlutter implements AuthCredential {
+  /// The native instance
   final native.AuthCredential nativeInstance;
 
+  /// Constructor
   AuthCredentialFlutter(this.nativeInstance);
   @override
   String get providerId => nativeInstance.providerId;
@@ -52,9 +57,11 @@ class AuthCredentialFlutter implements AuthCredential {
 
 /// Flutter impl
 class UserCredentialFlutter implements UserCredential {
+  /// The native instance
   final native.UserCredential nativeInstance;
   User? _user;
 
+  /// Constructor
   UserCredentialFlutter(this.nativeInstance);
   @override
   AuthCredential get credential =>
@@ -67,10 +74,10 @@ class UserCredentialFlutter implements UserCredential {
   String toString() => 'UserCredentialFlutter($user)';
 }
 
-class UserFlutterImpl implements User, UserInfoWithIdToken {
+class _UserFlutterImpl implements User, UserInfoWithIdToken {
   final native.User nativeInstance;
 
-  UserFlutterImpl(this.nativeInstance);
+  _UserFlutterImpl(this.nativeInstance);
 
   @override
   String? get displayName => nativeInstance.displayName;
@@ -106,14 +113,16 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
       (await nativeInstance.getIdToken(forceRefresh ?? false))!;
 }
 
+/// Flutter impl
 class AuthFlutterImpl with AuthMixin implements AuthFlutter {
+  /// The native instance
   final native.FirebaseAuth nativeAuth;
 
-  StreamSubscription? onAuthStateChangedSubscription;
+  StreamSubscription? _onAuthStateChangedSubscription;
 
   void _listenToCurrentUser() {
-    onAuthStateChangedSubscription?.cancel();
-    onAuthStateChangedSubscription =
+    _onAuthStateChangedSubscription?.cancel();
+    _onAuthStateChangedSubscription =
         nativeAuth.authStateChanges().listen((user) {
       currentUserAdd(wrapUser(user));
     });
@@ -129,6 +138,7 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
     return UserCredentialFlutter(userCredential);
   }
 
+  /// Constructor
   AuthFlutterImpl(this.nativeAuth) {
     _listenToCurrentUser();
   }
@@ -143,11 +153,12 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   @override
   Future close(common.App? app) async {
     await super.close(app);
-    await onAuthStateChangedSubscription?.cancel();
+    await _onAuthStateChangedSubscription?.cancel();
   }
 
   google_sign_in.GoogleSignIn? _googleSignIn;
 
+  /// Google only...
   Future<AuthSignInResult?> nativeGoogleSignIn() async {
     late native.AuthCredential credential;
     _googleSignIn ??= google_sign_in.GoogleSignIn();
@@ -191,6 +202,7 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
     }
   }
 
+  /// Web google sign in
   Future<native.UserCredential> webSignInWithGoogle() async {
     // Create a new provider
     var googleProvider = native.GoogleAuthProvider();
@@ -247,9 +259,12 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   String toString() => 'AuthFlutter(${nativeAuth.app.name})';
 }
 
+/// Flutter impl
 class AuthSignInResultFlutter implements AuthSignInResult {
+  /// The native instance
   final native.UserCredential nativeUserCredentials;
 
+  /// Constructor
   AuthSignInResultFlutter(this.nativeUserCredentials);
 
   @override
@@ -271,5 +286,6 @@ extension FirebaseAuthFlutterExtension on Auth {
     }
   }
 
+  /// Auth flutter
   AuthFlutter get flutter => this as AuthFlutter;
 }

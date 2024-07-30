@@ -8,17 +8,27 @@ import 'import.dart';
 
 var _debug = false; // devWarning(true);
 
+/// Google auth provider.
 abstract class GoogleAuthProvider extends AuthProvider {
+  /// Default constructor
   factory GoogleAuthProvider() => GoogleAuthProviderImpl();
 
+  /// Native instance
+  native.GoogleAuthProvider get nativeAuthProvider;
+
+  /// Adds additional OAuth 2.0 scopes that you want to request (typically email)
   void addScope(String scope);
 }
 
+/// Google auth provider implementation.
 class GoogleAuthProviderImpl implements GoogleAuthProvider {
+  /// Default constructor
   GoogleAuthProviderImpl() {
     nativeAuthProvider = native.GoogleAuthProvider();
   }
 
+  /// The native instance
+  @override
   late native.GoogleAuthProvider nativeAuthProvider;
 
   /// Adds additional OAuth 2.0 scopes that you want to request from the
@@ -34,9 +44,13 @@ class GoogleAuthProviderImpl implements GoogleAuthProvider {
 
 google_sign_in.GoogleSignIn? _googleSignIn;
 
+/// Google auth extension.
 extension AuthFlutterImplGoogle on Auth {
+  /// Firebase native auth
   native.FirebaseAuth get firebaseNativeAuth =>
       (this as AuthFlutterImpl).nativeAuth;
+
+  /// Native google sign in
   Future<AuthSignInResult> nativeGoogleSignIn(
       GoogleAuthProvider provider) async {
     late native.AuthCredential credential;
@@ -93,6 +107,7 @@ extension AuthFlutterImplGoogle on Auth {
     }
   }
 
+  /// Web google sign in
   Future<AuthSignInResult> webGoogleSignIn(GoogleAuthProvider provider) async {
     // Create a new provider
     var googleProvider = native.GoogleAuthProvider();

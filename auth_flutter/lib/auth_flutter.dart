@@ -9,5 +9,6 @@ export 'src/google_auth.dart' show GoogleAuthProvider;
 /// The flutter auth service
 AuthService get authServiceFlutter => auth_flutter.authService;
 
+/// The flutter auth service
 @Deprecated('Use authServiceFlutter')
 AuthService get authService => authServiceFlutter;
