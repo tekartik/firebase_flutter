@@ -3,32 +3,32 @@
 version: 2
 
 enable-beta-ecosystems: true
+
 updates:
   - package-ecosystem: "pub"
     directory: "auth_flutter"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firebase_flutter"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_flutter"
     schedule:
       interval: "monthly"
-
+  - package-ecosystem: "pub"
+    directory: "functions_call_flutter"
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "repo_support"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "storage_flutter"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

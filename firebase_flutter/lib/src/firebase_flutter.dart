@@ -42,7 +42,7 @@ class _FirebaseAppOptionsFlutter with FirebaseAppOptionsMixin {
   Map<String, Object?> toDebugMap() => nativeInstance.asMap;
 }
 
-class _FirebaseFlutter implements FirebaseFlutter {
+class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
   @override
   Future<App> initializeAppAsync({AppOptions? options, String? name}) async {
     flutter.FirebaseApp nativeApp;
@@ -73,7 +73,10 @@ class _FirebaseFlutter implements FirebaseFlutter {
     options = wrapOptions(nativeApp.options);
 
     return _FirebaseAppFlutter(
-        nativeInstance: nativeApp, options: options, isDefault: isDefault);
+        firebaseFlutter: this,
+        nativeInstance: nativeApp,
+        options: options,
+        isDefault: isDefault);
   }
 
   @override
@@ -83,7 +86,10 @@ class _FirebaseFlutter implements FirebaseFlutter {
       var nativeApp = flutter.Firebase.app();
       options = wrapOptions(nativeApp.options);
       return _FirebaseAppFlutter(
-          nativeInstance: nativeApp, options: options, isDefault: true);
+          firebaseFlutter: this,
+          nativeInstance: nativeApp,
+          options: options,
+          isDefault: true);
     } else {
       throw 'not supported, use async method';
     }
@@ -94,6 +100,7 @@ class _FirebaseFlutter implements FirebaseFlutter {
     if (name == null) {
       var nativeApp = flutter.Firebase.app();
       return _FirebaseAppFlutter(
+          firebaseFlutter: this,
           nativeInstance: nativeApp,
           options: wrapOptions(nativeApp.options),
           isDefault: true);
@@ -116,6 +123,7 @@ abstract class FirebaseAppFlutter {
 }
 
 class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
+  final FirebaseFlutter firebaseFlutter;
   @override
   final bool? isDefault;
   @override
@@ -124,7 +132,10 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   final flutter.FirebaseApp? nativeInstance;
 
   _FirebaseAppFlutter(
-      {this.nativeInstance, required this.options, this.isDefault});
+      {required this.firebaseFlutter,
+      this.nativeInstance,
+      required this.options,
+      this.isDefault});
 
   @override
   Future delete() async {
@@ -136,6 +147,8 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   @override
   String get name => nativeInstance!.name;
 
+  @override
+  Firebase get firebase => firebaseFlutter;
   @override
   String toString() => 'AppFlutter($name)';
 }
