@@ -23,6 +23,11 @@ dependencies:
     version: '>=0.4.0+0'
   firebase_auth: '>=4.17.6'
   google_sign_in: '>=5.4.2'
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase
 dev_dependencies:
   flutter_test:
     sdk: flutter

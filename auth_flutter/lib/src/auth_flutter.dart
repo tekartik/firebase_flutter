@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
@@ -14,7 +15,7 @@ import 'import.dart';
 
 /// Flutter impl
 class AuthServiceFlutterImpl
-    with AuthServiceMixin
+    with common.FirebaseProductServiceMixin<FirebaseAuth>, AuthServiceMixin
     implements AuthServiceFlutter {
   @override
   Auth auth(common.App app) {
@@ -114,7 +115,9 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
 }
 
 /// Flutter impl
-class AuthFlutterImpl with AuthMixin implements AuthFlutter {
+class AuthFlutterImpl
+    with FirebaseAppProductMixin, FirebaseAuthMixin
+    implements AuthFlutter {
   /// The native instance
   final native.FirebaseAuth nativeAuth;
 
@@ -151,9 +154,9 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   }
 
   @override
-  Future close(common.App? app) async {
-    await super.close(app);
-    await _onAuthStateChangedSubscription?.cancel();
+  void dispose() {
+    _onAuthStateChangedSubscription?.cancel();
+    super.dispose();
   }
 
   google_sign_in.GoogleSignIn? _googleSignIn;
