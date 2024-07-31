@@ -30,3 +30,4 @@ build/
 /.flutter-plugins
 /.flutter-plugins-dependencies
 /.metadata
+/pubspec_overrides.yaml

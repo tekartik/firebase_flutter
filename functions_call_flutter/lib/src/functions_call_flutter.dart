@@ -4,8 +4,7 @@ import 'package:tekartik_firebase/firebase.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     show FirebaseAppFlutter;
-
-import 'functions_call.dart';
+import 'package:tekartik_firebase_functions_call/functions_call.dart';
 
 /// Firebase functions call service flutter
 final _firebaseFunctionsCallServiceFlutter =
@@ -17,6 +16,7 @@ FirebaseFunctionsCallService get firebaseFunctionsCallServiceFlutter =>
 
 /// Firebase functions call service flutter
 class FirebaseFunctionsCallServiceFlutter
+    with FirebaseFunctionsCallServiceDefaultMixin
     implements FirebaseFunctionsCallService {
   /// Most implementation need a single instance, keep it in memory!
   final _instances = <String, FirebaseFunctionsCallFlutter>{};
