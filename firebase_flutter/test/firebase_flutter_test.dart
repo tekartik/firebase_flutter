@@ -7,6 +7,9 @@ import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 
 void main() {
   group('firebase_flutter', () {
+    test('isLocal', () {
+      expect(firebaseFlutter.isLocal, isFalse);
+    });
     test('api', () {
       // ignore: unnecessary_statements
       firebaseFlutter;
