@@ -37,7 +37,7 @@ class FirebaseFunctionsCallServiceFlutter
 
   @override
   FirebaseFunctionsCallFlutter functionsCall(App app,
-      {required String region}) {
+      {required String region, Uri? baseUri}) {
     return _getInstance(app, region, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
