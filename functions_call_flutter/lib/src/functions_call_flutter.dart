@@ -1,6 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart' as native;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     show FirebaseAppFlutter;
@@ -16,7 +17,9 @@ FirebaseFunctionsCallService get firebaseFunctionsCallServiceFlutter =>
 
 /// Firebase functions call service flutter
 class FirebaseFunctionsCallServiceFlutter
-    with FirebaseFunctionsCallServiceDefaultMixin
+    with
+        FirebaseProductServiceMixin<FirebaseFunctionsCall>,
+        FirebaseFunctionsCallServiceDefaultMixin
     implements FirebaseFunctionsCallService {
   /// Most implementation need a single instance, keep it in memory!
   final _instances = <String, FirebaseFunctionsCallFlutter>{};
@@ -48,7 +51,9 @@ class FirebaseFunctionsCallServiceFlutter
 }
 
 /// Firebase functions call flutter
-class FirebaseFunctionsCallFlutter implements FirebaseFunctionsCall {
+class FirebaseFunctionsCallFlutter
+    with FirebaseAppProductMixin<FirebaseFunctionsCall>
+    implements FirebaseFunctionsCall {
   /// Service
   final FirebaseFunctionsCallServiceFlutter service;
 

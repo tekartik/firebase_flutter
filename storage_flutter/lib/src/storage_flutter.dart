@@ -9,7 +9,9 @@ import 'package:tekartik_firebase_storage/utils/link.dart';
 
 import 'import.dart';
 
-class StorageServiceFlutter with StorageServiceMixin implements StorageService {
+class StorageServiceFlutter
+    with FirebaseProductServiceMixin<FirebaseStorage>, StorageServiceMixin
+    implements StorageService {
   StorageServiceFlutter();
 
   @override

@@ -116,7 +116,7 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
 
 /// Flutter impl
 class AuthFlutterImpl
-    with FirebaseAppProductMixin, FirebaseAuthMixin
+    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements AuthFlutter {
   /// The native instance
   final native.FirebaseAuth nativeAuth;

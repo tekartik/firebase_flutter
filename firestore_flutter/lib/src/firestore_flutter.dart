@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 import 'aggregate_query_flutter.dart';
@@ -20,9 +21,7 @@ FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
-    with
-        FirestoreServiceDefaultMixin,
-        FirebaseProductServiceMixin<FirestoreFlutter>
+    with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
   @override
   FirestoreFlutter firestore(App app) {
@@ -68,7 +67,9 @@ class FirestoreServiceFlutter
   bool get supportsAggregateQueries => true;
 }
 
-class FirestoreFlutter with FirestoreDefaultMixin implements Firestore {
+class FirestoreFlutter
+    with FirebaseAppProductMixin<Firestore>, FirestoreDefaultMixin
+    implements Firestore {
   @override
   final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
