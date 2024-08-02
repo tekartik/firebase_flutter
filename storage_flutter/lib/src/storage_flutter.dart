@@ -56,6 +56,7 @@ class FileFlutter with FileMixin implements File {
   native.Reference? _ref;
 
   FileFlutter(this.bucket, this.path);
+
   FileFlutter.ref(this.bucket, this._ref) : path = _ref!.fullPath;
 
   /// init and assign, to use: `_ref ??= await _initRef();`

@@ -72,11 +72,13 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     }
     options = wrapOptions(nativeApp.options);
 
-    return _FirebaseAppFlutter(
+    var app = _FirebaseAppFlutter(
         firebaseFlutter: this,
         nativeInstance: nativeApp,
         options: options,
         isDefault: isDefault);
+    FirebaseMixin.latestFirebaseInstanceOrNull = app;
+    return app;
   }
 
   @override
@@ -84,12 +86,15 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     if (options == null && name == null) {
       // TODO 2020-08-26 if this fail, consider calling async method only
       var nativeApp = flutter.Firebase.app();
+
       options = wrapOptions(nativeApp.options);
-      return _FirebaseAppFlutter(
+      var app = _FirebaseAppFlutter(
           firebaseFlutter: this,
           nativeInstance: nativeApp,
           options: options,
           isDefault: true);
+      FirebaseMixin.latestFirebaseInstanceOrNull = app;
+      return app;
     } else {
       throw 'not supported, use async method';
     }
@@ -149,6 +154,7 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
 
   @override
   Firebase get firebase => firebaseFlutter;
+
   @override
   String toString() => 'AppFlutter($name)';
 }

@@ -52,6 +52,7 @@ class AuthCredentialFlutter implements AuthCredential {
 
   /// Constructor
   AuthCredentialFlutter(this.nativeInstance);
+
   @override
   String get providerId => nativeInstance.providerId;
 }
@@ -64,6 +65,7 @@ class UserCredentialFlutter implements UserCredential {
 
   /// Constructor
   UserCredentialFlutter(this.nativeInstance);
+
   @override
   AuthCredential get credential =>
       AuthCredentialFlutter(nativeInstance.credential!);
