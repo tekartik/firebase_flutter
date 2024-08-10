@@ -3,7 +3,7 @@ description: Firebase flutter
 version: 0.8.4+1
 publish_to: none
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.5.0
 
 dependencies:
   flutter:
