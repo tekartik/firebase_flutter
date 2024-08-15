@@ -93,7 +93,7 @@ class FirebaseFunctionsCallableFlutter implements FirebaseFunctionsCallable {
       this.functionsCallFlutter, this.nativeInstance);
 
   @override
-  Future<FirebaseFunctionsCallableResultFlutter> call<T>(
+  Future<FirebaseFunctionsCallableResultFlutter<T>> call<T>(
       [Object? parameters]) async {
     return FirebaseFunctionsCallableResultFlutter(
         await nativeInstance.call<T>(parameters));
