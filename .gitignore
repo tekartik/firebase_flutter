@@ -21,3 +21,5 @@ doc/api/
 *.iml
 .vscode/
 /all_firebase_flutter/.flutter-plugins-dependencies
+/pubspec.yaml
+/pubspec.lock
