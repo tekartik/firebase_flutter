@@ -5,6 +5,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     show FirebaseAppFlutter;
+import 'package:tekartik_firebase_functions/firebase_functions.dart';
 import 'package:tekartik_firebase_functions_call/functions_call.dart';
 
 /// Firebase functions call service flutter
@@ -95,8 +96,15 @@ class FirebaseFunctionsCallableFlutter implements FirebaseFunctionsCallable {
   @override
   Future<FirebaseFunctionsCallableResultFlutter<T>> call<T>(
       [Object? parameters]) async {
-    return FirebaseFunctionsCallableResultFlutter(
-        await nativeInstance.call<T>(parameters));
+    try {
+      return FirebaseFunctionsCallableResultFlutter(
+          await nativeInstance.call<T>(parameters));
+    } catch (e) {
+      if (e is native.FirebaseFunctionsException) {
+        throw HttpsErrorFlutter(e);
+      }
+      throw HttpsError(HttpsErrorCode.internal, '$e', e);
+    }
   }
 }
 
@@ -112,4 +120,29 @@ class FirebaseFunctionsCallableResultFlutter<T>
 
   @override
   T get data => nativeInstance.data as T;
+}
+
+/// Errors for https callabacle
+class HttpsErrorFlutter implements HttpsError {
+  /// Native instance
+  final native.FirebaseFunctionsException nativeInstance;
+
+  /// Constructor
+  HttpsErrorFlutter(this.nativeInstance);
+
+  @override
+  String get code => nativeInstance.code;
+
+  @override
+  String get message => nativeInstance.message?.trim() ?? '';
+
+  @override
+  Object? get details => nativeInstance.details;
+
+  @override
+  String toString() => 'https_error_fl ${{
+        'code': code,
+        'message': message,
+        if (details != null) 'details': details
+      }.toString()}';
 }
