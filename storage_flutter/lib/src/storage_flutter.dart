@@ -2,13 +2,13 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:firebase_storage/firebase_storage.dart' as native;
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/src/common/storage_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/storage.dart';
 import 'package:tekartik_firebase_storage/utils/link.dart';
 
 import 'import.dart';
-import 'package:tekartik_firebase/firebase_mixin.dart';
 
 class StorageServiceFlutter
     with FirebaseProductServiceMixin<FirebaseStorage>, StorageServiceMixin
@@ -285,6 +285,9 @@ class StorageFlutter
 
   @override
   FirebaseApp get app => appFlutter;
+
+  @override
+  FirebaseStorageService get service => serviceFlutter;
 }
 
 class _GetFileOptionsFlutter implements GetFilesOptions {
