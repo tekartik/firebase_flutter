@@ -45,6 +45,7 @@ class FirebaseFunctionsCallServiceFlutter
 
       return FirebaseFunctionsCallFlutter(
           this,
+          appFlutter,
           native.FirebaseFunctions.instanceFor(
               app: appFlutter.nativeInstance!, region: region));
     });
@@ -55,14 +56,18 @@ class FirebaseFunctionsCallServiceFlutter
 class FirebaseFunctionsCallFlutter
     with FirebaseAppProductMixin<FirebaseFunctionsCall>
     implements FirebaseFunctionsCall {
+  /// App flutter
+  final FirebaseAppFlutter appFlutter;
+
   /// Service
-  final FirebaseFunctionsCallServiceFlutter service;
+  final FirebaseFunctionsCallServiceFlutter serviceFlutter;
 
   /// Native instance
   final native.FirebaseFunctions nativeInstance;
 
   /// Constructor
-  FirebaseFunctionsCallFlutter(this.service, this.nativeInstance);
+  FirebaseFunctionsCallFlutter(
+      this.serviceFlutter, this.appFlutter, this.nativeInstance);
 
   @override
   FirebaseFunctionsCallableFlutter callable(String name,
@@ -74,6 +79,12 @@ class FirebaseFunctionsCallFlutter
           options: options?.nativeInstance,
         ));
   }
+
+  @override
+  FirebaseApp get app => appFlutter;
+
+  @override
+  FirebaseFunctionsCallService get service => serviceFlutter;
 }
 
 extension on FirebaseFunctionsCallableOptions {

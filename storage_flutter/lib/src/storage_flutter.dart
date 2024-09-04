@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_storage/storage.dart';
 import 'package:tekartik_firebase_storage/utils/link.dart';
 
 import 'import.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 
 class StorageServiceFlutter
     with FirebaseProductServiceMixin<FirebaseStorage>, StorageServiceMixin
@@ -20,9 +21,10 @@ class StorageServiceFlutter
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
-        return StorageFlutter(native.FirebaseStorage.instance);
-      } else {
         return StorageFlutter(
+            this, appFlutter, native.FirebaseStorage.instance);
+      } else {
+        return StorageFlutter(this, appFlutter,
             native.FirebaseStorage.instanceFor(app: appFlutter.nativeInstance));
       }
     });
@@ -256,10 +258,14 @@ class ReferenceFlutter with ReferenceMixin implements Reference {
   String toString() => nativeInstance.toString();
 }
 
-class StorageFlutter implements Storage {
+class StorageFlutter
+    with FirebaseAppProductMixin<FirebaseStorage>
+    implements Storage {
+  final FirebaseAppFlutter appFlutter;
+  final StorageServiceFlutter serviceFlutter;
   final native.FirebaseStorage firebaseStorage;
 
-  StorageFlutter(this.firebaseStorage);
+  StorageFlutter(this.serviceFlutter, this.appFlutter, this.firebaseStorage);
 
   @override
   Bucket bucket([String? name]) {
@@ -276,6 +282,9 @@ class StorageFlutter implements Storage {
       return ReferenceFlutter(firebaseStorage.ref(path));
     }
   }
+
+  @override
+  FirebaseApp get app => appFlutter;
 }
 
 class _GetFileOptionsFlutter implements GetFilesOptions {

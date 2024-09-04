@@ -119,7 +119,7 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
 }
 
 /// Firebase app flutter
-abstract class FirebaseAppFlutter {
+abstract class FirebaseAppFlutter implements FirebaseApp {
   /// Native instances if any.
   flutter.FirebaseApp? get nativeInstance;
 

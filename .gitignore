@@ -23,3 +23,4 @@ doc/api/
 /all_firebase_flutter/.flutter-plugins-dependencies
 /pubspec.yaml
 /pubspec.lock
+pubspec_overrides.yaml

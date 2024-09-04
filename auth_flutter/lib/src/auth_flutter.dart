@@ -23,7 +23,7 @@ class AuthServiceFlutterImpl
       assert(app is firebase_flutter.FirebaseAppFlutter,
           'invalid firebase app type');
       final appFlutter = app as firebase_flutter.FirebaseAppFlutter;
-      return AuthFlutterImpl(
+      return AuthFlutterImpl(this, appFlutter,
           native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance!));
     });
   }
@@ -120,6 +120,9 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
 class AuthFlutterImpl
     with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements AuthFlutter {
+  /// The service
+  final AuthServiceFlutter serviceFlutter;
+
   /// The native instance
   final native.FirebaseAuth nativeAuth;
 
@@ -143,8 +146,11 @@ class AuthFlutterImpl
     return UserCredentialFlutter(userCredential);
   }
 
+  /// App
+  final firebase_flutter.FirebaseAppFlutter appFlutter;
+
   /// Constructor
-  AuthFlutterImpl(this.nativeAuth) {
+  AuthFlutterImpl(this.serviceFlutter, this.appFlutter, this.nativeAuth) {
     _listenToCurrentUser();
   }
 
@@ -262,6 +268,12 @@ class AuthFlutterImpl
 
   @override
   String toString() => 'AuthFlutter(${nativeAuth.app.name})';
+
+  @override
+  common.FirebaseApp get app => appFlutter;
+
+  @override
+  FirebaseAuthService get service => serviceFlutter;
 }
 
 /// Flutter impl

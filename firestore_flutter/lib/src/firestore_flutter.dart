@@ -29,10 +29,12 @@ class FirestoreServiceFlutter
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
-        return FirestoreFlutter(this, native.FirebaseFirestore.instance);
+        return FirestoreFlutter(
+            this, appFlutter, native.FirebaseFirestore.instance);
       } else {
         return FirestoreFlutter(
             this,
+            appFlutter,
             native.FirebaseFirestore.instanceFor(
                 app: appFlutter.nativeInstance!));
       }
@@ -74,7 +76,8 @@ class FirestoreFlutter
   final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
 
-  FirestoreFlutter(this.service, this.nativeInstance);
+  final FirebaseAppFlutter appFlutter;
+  FirestoreFlutter(this.service, this.appFlutter, this.nativeInstance);
 
   @override
   WriteBatch batch() => WriteBatchFlutter(nativeInstance.batch());
@@ -105,6 +108,9 @@ class FirestoreFlutter
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
     return await Future.wait(refs.map((ref) => ref.get()));
   }
+
+  @override
+  FirebaseApp get app => appFlutter;
 }
 
 class TransactionFlutter implements Transaction {
