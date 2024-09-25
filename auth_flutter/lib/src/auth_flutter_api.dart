@@ -5,10 +5,10 @@ class AuthSignInOptionsWeb implements AuthSignInOptions {
   late bool _isPopup;
 
   /// True if it is a popup
-  bool get isPopup => _isPopup == true;
+  bool get isPopup => _isPopup;
 
   /// True if it is a redirect
-  bool get isRedirect => _isPopup != true;
+  bool get isRedirect => !_isPopup;
 
   /// Constructor
   AuthSignInOptionsWeb({bool isPopup = false, bool isRedirect = false}) {
