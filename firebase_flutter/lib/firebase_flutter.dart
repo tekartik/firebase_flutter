@@ -3,6 +3,8 @@ import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
 
 import 'src/firebase_flutter.dart';
 
+export 'package:tekartik_firebase/firebase.dart';
+
 export 'src/firebase_flutter.dart'
     show FirebaseFlutter, FirebaseFlutterExtension;
 

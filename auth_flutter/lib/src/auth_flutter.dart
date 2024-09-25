@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase/firebase_mixin.dart';
-import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_auth_flutter/src/google_auth.dart';
