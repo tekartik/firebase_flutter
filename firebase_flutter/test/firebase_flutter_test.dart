@@ -1,4 +1,4 @@
-library tekartik_firebase_flutter.test.firebase_flutter_test;
+library;
 
 import 'package:firebase_core/firebase_core.dart' as core;
 import 'package:flutter_test/flutter_test.dart';
