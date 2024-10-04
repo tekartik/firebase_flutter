@@ -293,6 +293,10 @@ class AuthSignInResultFlutter implements AuthSignInResult {
 
 /// Helpers
 extension FirebaseAuthFlutterExtension on Auth {
+  /// Native instance
+  native.FirebaseAuth get nativeInstance =>
+      (this as AuthFlutterImpl).nativeAuth;
+
   /// Web only
   Future<void> webSetIndexedDbPersistence() async {
     if (kIsWeb && this is AuthFlutterImpl) {

@@ -127,6 +127,13 @@ abstract class FirebaseAppFlutter implements FirebaseApp {
   bool? get isDefault;
 }
 
+/// Firebase app flutter extension.
+extension FirebaseAppFlutterExtension on FirebaseApp {
+  /// Native instances if any.
+  flutter.FirebaseApp get nativeInstance =>
+      (this as FirebaseAppFlutter).nativeInstance!;
+}
+
 class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   final FirebaseFlutter firebaseFlutter;
   @override
