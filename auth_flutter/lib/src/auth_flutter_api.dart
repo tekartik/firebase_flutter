@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:tekartik_firebase_auth/auth.dart';
 
 /// Browser sign in options
@@ -16,11 +17,23 @@ class AuthSignInOptionsWeb implements AuthSignInOptions {
   }
 }
 
+/// compat
+typedef AuthFlutter = FirebaseAuthFlutter;
+
 /// Browser sign in result
-abstract class AuthFlutter implements Auth {
+abstract class FirebaseAuthFlutter implements Auth {
   /// Sign in with popup
   Future<User?> googleSignIn();
+
+  /// The native instance
+  native.FirebaseAuth get nativeInstance;
 }
 
+/// compat
+typedef AuthServiceFlutter = FirebaseAuthServiceFlutter;
+
 /// Auth service for flutter
-abstract class AuthServiceFlutter implements AuthService {}
+abstract class FirebaseAuthServiceFlutter implements FirebaseAuthService {
+  @override
+  FirebaseAuthFlutter auth(App app);
+}

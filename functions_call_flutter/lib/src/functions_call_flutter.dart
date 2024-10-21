@@ -2,7 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart' as native;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 // ignore: implementation_imports
-import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
+import 'package:tekartik_firebase_flutter/firebase_flutter.dart'
     show FirebaseAppFlutter;
 import 'package:tekartik_firebase_functions/firebase_functions.dart';
 import 'package:tekartik_firebase_functions_call/functions_call.dart';

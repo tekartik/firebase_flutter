@@ -6,7 +6,11 @@ import 'src/firebase_flutter.dart';
 export 'package:tekartik_firebase/firebase.dart';
 
 export 'src/firebase_flutter.dart'
-    show FirebaseFlutter, FirebaseFlutterExtension, FirebaseAppFlutterExtension;
+    show
+        FirebaseFlutter,
+        FirebaseFlutterExtension,
+        FirebaseAppFlutterExtension,
+        FirebaseAppFlutter;
 
 /// Flutter async for initialization
 /// Compat

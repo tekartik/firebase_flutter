@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
-import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 
 import 'aggregate_query_flutter.dart';
 import 'document_snapshot_flutter.dart';

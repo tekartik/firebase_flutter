@@ -6,7 +6,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_auth_flutter/src/google_auth.dart';
-import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
+import 'package:tekartik_firebase_flutter/firebase_flutter.dart'
     as firebase_flutter;
 
 import 'import.dart' as common;
@@ -17,7 +17,7 @@ class AuthServiceFlutterImpl
     with common.FirebaseProductServiceMixin<FirebaseAuth>, AuthServiceMixin
     implements AuthServiceFlutter {
   @override
-  Auth auth(common.App app) {
+  FirebaseAuthFlutter auth(common.App app) {
     return getInstance(app, () {
       assert(app is firebase_flutter.FirebaseAppFlutter,
           'invalid firebase app type');
@@ -118,11 +118,12 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
 /// Flutter impl
 class AuthFlutterImpl
     with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
-    implements AuthFlutter {
+    implements FirebaseAuthFlutter {
   /// The service
   final AuthServiceFlutter serviceFlutter;
 
   /// The native instance
+  /// Prefer using nativeInstance
   final native.FirebaseAuth nativeAuth;
 
   StreamSubscription? _onAuthStateChangedSubscription;
@@ -273,6 +274,10 @@ class AuthFlutterImpl
 
   @override
   FirebaseAuthService get service => serviceFlutter;
+
+  /// Prefer nativeInstance
+  @override
+  native.FirebaseAuth get nativeInstance => nativeAuth;
 }
 
 /// Flutter impl
