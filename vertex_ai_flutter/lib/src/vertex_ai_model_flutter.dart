@@ -21,7 +21,7 @@ extension on VaiContentPart {
     if (part is VaiContentTextPart) {
       return fb.TextPart(part.text);
     } else if (part is VaiContentDataPart) {
-      return fb.DataPart(part.mimeType, part.bytes);
+      return fb.InlineDataPart(part.mimeType, part.bytes);
     } else {
       throw 'Unsupported part $part (${part.runtimeType})';
     }
