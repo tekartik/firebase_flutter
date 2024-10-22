@@ -58,7 +58,8 @@ class _FirebaseVertexAiFlutter
   FirebaseApp get app => appFlutter;
 
   @override
-  VaiGenerativeModel generativeModel({required String model}) {
+  VaiGenerativeModel generativeModel({String? model}) {
+    model ??= vertexAiModelGemini1dot5Flash;
     var nativeModel = fbVertexAi.generativeModel(model: model);
     return VaiGenerativeModelFlutter(this, nativeModel);
   }

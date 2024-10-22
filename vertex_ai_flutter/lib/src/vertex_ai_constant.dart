@@ -4,6 +4,3 @@
 const vertexAiLocationParis = 'europe-west9';
 
 // See https://firebase.google.com/docs/vertex-ai/gemini-models#available-model-names
-
-/// Gemini 1.5 flash
-const vertexAiModelGemini1dot5Flash = 'gemini-1.5-flash';
