@@ -30,6 +30,7 @@ class _FirebaseVertexAiServiceFlutter
   final FirebaseAuthService? authServiceFlutter;
 
   _FirebaseVertexAiServiceFlutter({this.authServiceFlutter, this.location});
+
   @override
   FirebaseVertexAiFlutter vertexAi(App app) {
     return getInstance(app, () {
@@ -58,7 +59,8 @@ class _FirebaseVertexAiFlutter
   FirebaseApp get app => appFlutter;
 
   @override
-  VaiGenerativeModel generativeModel({String? model}) {
+  VaiGenerativeModel generativeModel(
+      {String? model, GenerationConfig? generationConfig}) {
     model ??= vertexAiModelGemini1dot5Flash;
     var nativeModel = fbVertexAi.generativeModel(model: model);
     return VaiGenerativeModelFlutter(this, nativeModel);
