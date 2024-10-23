@@ -4,7 +4,6 @@ import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 import 'package:tekartik_firebase_vertex_ai/vertex_ai.dart';
 import 'package:tekartik_firebase_vertex_ai_flutter/src/vertex_ai_model_flutter.dart';
-import 'package:tekartik_common_utils/list_utils.dart';
 
 /// Flutter service
 final FirebaseVertexAiServiceFlutter firebaseVertexAiServiceFlutter =
