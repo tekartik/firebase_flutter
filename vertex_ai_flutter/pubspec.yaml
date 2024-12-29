@@ -15,7 +15,7 @@ dependencies:
       url: https://github.com/tekartik/firebase_vertex_ai.dart
       ref: dart3a
       path: vertex_ai
-  firebase_vertexai: ">=1.0.0"
+  firebase_vertexai: ">=1.0.1"
   tekartik_firebase_flutter:
     git:
       url: https://github.com/tekartik/firebase_flutter

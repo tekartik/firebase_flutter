@@ -9,8 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path:
-  meta:
+  path: ">=1.9.0"
+  meta: ">=1.15.0"
   tekartik_firebase_firestore:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
@@ -33,7 +33,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  process_run: '>=0.10.2'
+  process_run: ">=1.2.1+1"
   tekartik_lints_flutter:
     git:
       url: https://github.com/tekartik/common_flutter.dart
