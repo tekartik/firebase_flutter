@@ -67,6 +67,9 @@ class FirestoreServiceFlutter
 
   @override
   bool get supportsAggregateQueries => true;
+
+  @override
+  bool get supportsVectorValue => true;
 }
 
 class FirestoreFlutter
@@ -221,6 +224,8 @@ dynamic toNativeValue(Object? value) {
   } else if (value is GeoPoint) {
     return native.GeoPoint(
         value.latitude.toDouble(), value.longitude.toDouble());
+  } else if (value is VectorValue) {
+    return native.VectorValue(value.toArray());
   }
 
   throw 'not supported $value type ${value.runtimeType}';
@@ -250,6 +255,8 @@ dynamic fromNativeValue(Firestore firestore, Object? nativeValue) {
     return GeoPoint(nativeValue.latitude, nativeValue.longitude);
   } else if (nativeValue is native.Timestamp) {
     return Timestamp(nativeValue.seconds, nativeValue.nanoseconds);
+  } else if (nativeValue is native.VectorValue) {
+    return VectorValue(nativeValue.toArray());
   } else if (nativeValue is DateTime) {
     // Compat
     return Timestamp.fromDateTime(nativeValue);

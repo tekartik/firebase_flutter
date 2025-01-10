@@ -20,10 +20,6 @@ jobs:
             flutter: stable
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '11.x'
       - uses: subosito/flutter-action@v2
         with:
           channel: ${{ matrix.flutter }}
