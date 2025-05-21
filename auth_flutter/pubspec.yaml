@@ -3,7 +3,7 @@ description: Firebase auth flutter
 version: 0.10.2
 publish_to: none
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.7.0
 
 dependencies:
   flutter:
@@ -32,14 +32,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   process_run: ">=1.2.1+1"
-  dev_build: ">=1.1.0+2"
+  dev_build: ">=1.1.2"
   tekartik_lints_flutter:
     git:
       url: https://github.com/tekartik/common_flutter.dart
       ref: dart3a
       path: packages/lints_flutter
     version: '>=0.1.0'
+resolution: workspace
 
-dependency_overrides:
-  tekartik_firebase_flutter:
-    path: ../firebase_flutter
