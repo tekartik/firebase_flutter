@@ -50,7 +50,9 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     if (options != null) {
       if (options is _FirebaseAppOptionsFlutter) {
         nativeApp = await flutter.Firebase.initializeApp(
-            name: name, options: options.nativeInstance);
+          name: name,
+          options: options.nativeInstance,
+        );
       } else
       // If empty (checking only projectId)
       // clone the existing options
@@ -58,12 +60,14 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
         nativeApp = await flutter.Firebase.initializeApp(name: name);
       } else {
         nativeApp = await flutter.Firebase.initializeApp(
-            name: name,
-            options: flutter.FirebaseOptions(
-                apiKey: options.apiKey!,
-                appId: options.appId!,
-                messagingSenderId: options.messagingSenderId!,
-                projectId: options.projectId!));
+          name: name,
+          options: flutter.FirebaseOptions(
+            apiKey: options.apiKey!,
+            appId: options.appId!,
+            messagingSenderId: options.messagingSenderId!,
+            projectId: options.projectId!,
+          ),
+        );
         throw 'not supported yet';
       }
     } else {
@@ -73,10 +77,11 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     options = wrapOptions(nativeApp.options);
 
     var app = _FirebaseAppFlutter(
-        firebaseFlutter: this,
-        nativeInstance: nativeApp,
-        options: options,
-        isDefault: isDefault);
+      firebaseFlutter: this,
+      nativeInstance: nativeApp,
+      options: options,
+      isDefault: isDefault,
+    );
     FirebaseMixin.latestFirebaseInstanceOrNull = app;
     return app;
   }
@@ -89,10 +94,11 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
 
       options = wrapOptions(nativeApp.options);
       var app = _FirebaseAppFlutter(
-          firebaseFlutter: this,
-          nativeInstance: nativeApp,
-          options: options,
-          isDefault: true);
+        firebaseFlutter: this,
+        nativeInstance: nativeApp,
+        options: options,
+        isDefault: true,
+      );
       FirebaseMixin.latestFirebaseInstanceOrNull = app;
       return app;
     } else {
@@ -105,13 +111,15 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     if (name == null) {
       var nativeApp = flutter.Firebase.app();
       return _FirebaseAppFlutter(
-          firebaseFlutter: this,
-          nativeInstance: nativeApp,
-          options: wrapOptions(nativeApp.options),
-          isDefault: true);
+        firebaseFlutter: this,
+        nativeInstance: nativeApp,
+        options: wrapOptions(nativeApp.options),
+        isDefault: true,
+      );
     }
     throw UnsupportedError(
-        'Flutter has only a single default app instantiated');
+      'Flutter has only a single default app instantiated',
+    );
   }
 
   @override
@@ -143,11 +151,12 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   @override
   final flutter.FirebaseApp? nativeInstance;
 
-  _FirebaseAppFlutter(
-      {required this.firebaseFlutter,
-      this.nativeInstance,
-      required this.options,
-      this.isDefault});
+  _FirebaseAppFlutter({
+    required this.firebaseFlutter,
+    this.nativeInstance,
+    required this.options,
+    this.isDefault,
+  });
 
   @override
   Future delete() async {

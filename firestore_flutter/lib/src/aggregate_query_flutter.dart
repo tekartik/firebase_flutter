@@ -20,7 +20,9 @@ class AggregateQueryFlutter implements AggregateQuery {
   }
 
   native.AggregateField? _convertFieldAt(
-      List<AggregateField> fields, int index) {
+    List<AggregateField> fields,
+    int index,
+  ) {
     if (index < fields.length) {
       return _convertField(fields[index]);
     }
@@ -75,7 +77,9 @@ class AggregateQuerySnapshotFlutter implements AggregateQuerySnapshot {
   late final native.AggregateQuerySnapshot nativeInstance;
 
   AggregateQuerySnapshotFlutter(
-      this.aggregateQueryFlutter, this.nativeInstance);
+    this.aggregateQueryFlutter,
+    this.nativeInstance,
+  );
 
   @override
   int? get count => nativeInstance.count;

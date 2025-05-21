@@ -12,7 +12,7 @@ void main() {
         firebaseFunctionsCallServiceFlutter,
         FirebaseFunctionsCall,
         FirebaseFunctionsCallable,
-        FirebaseFunctionsCallableOptions
+        FirebaseFunctionsCallableOptions,
       ];
     });
   });

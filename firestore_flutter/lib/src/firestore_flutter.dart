@@ -30,13 +30,16 @@ class FirestoreServiceFlutter
       var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
         return FirestoreFlutter(
-            this, appFlutter, native.FirebaseFirestore.instance);
+          this,
+          appFlutter,
+          native.FirebaseFirestore.instance,
+        );
       } else {
         return FirestoreFlutter(
-            this,
-            appFlutter,
-            native.FirebaseFirestore.instanceFor(
-                app: appFlutter.nativeInstance!));
+          this,
+          appFlutter,
+          native.FirebaseFirestore.instanceFor(app: appFlutter.nativeInstance!),
+        );
       }
     });
   }
@@ -95,7 +98,8 @@ class FirestoreFlutter
 
   @override
   Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) updateFunction) {
+    FutureOr<T> Function(Transaction transaction) updateFunction,
+  ) {
     return nativeInstance.runTransaction((nativeTransaction) async {
       var transaction = TransactionFlutter(this, nativeTransaction);
       return await updateFunction(transaction);
@@ -130,23 +134,31 @@ class TransactionFlutter implements Transaction {
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
-      _wrapDocumentSnapshot(firestore,
-          await nativeInstance.get(_unwrapDocumentReference(documentRef)!));
+      _wrapDocumentSnapshot(
+        firestore,
+        await nativeInstance.get(_unwrapDocumentReference(documentRef)!),
+      );
 
   @override
-  void set(DocumentReference documentRef, Map<String, Object?> data,
-      [SetOptions? options]) {
+  void set(
+    DocumentReference documentRef,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
     // Warning merge is not handle yet!
     nativeInstance.set(
-        _unwrapDocumentReference(documentRef)!,
-        documentDataToFlutterData(DocumentData(data)),
-        unwrapSetOption(options));
+      _unwrapDocumentReference(documentRef)!,
+      documentDataToFlutterData(DocumentData(data)),
+      unwrapSetOption(options),
+    );
   }
 
   @override
   void update(DocumentReference documentRef, Map<String, Object?> data) {
-    nativeInstance.update(_unwrapDocumentReference(documentRef)!,
-        documentDataToFlutterData(DocumentData(data)));
+    nativeInstance.update(
+      _unwrapDocumentReference(documentRef)!,
+      documentDataToFlutterData(DocumentData(data)),
+    );
   }
 }
 
@@ -169,18 +181,24 @@ class WriteBatchFlutter implements WriteBatch {
       nativeInstance.delete(_unwrapDocumentReference(ref!)!);
 
   @override
-  void set(DocumentReference ref, Map<String, Object?> data,
-      [SetOptions? options]) {
+  void set(
+    DocumentReference ref,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
     nativeInstance.set(
-        _unwrapDocumentReference(ref)!,
-        documentDataToFlutterData(DocumentData(data)),
-        unwrapSetOption(options));
+      _unwrapDocumentReference(ref)!,
+      documentDataToFlutterData(DocumentData(data)),
+      unwrapSetOption(options),
+    );
   }
 
   @override
   void update(DocumentReference ref, Map<String, Object?> data) =>
-      nativeInstance.update(_unwrapDocumentReference(ref)!,
-          documentDataToFlutterData(DocumentData(data)));
+      nativeInstance.update(
+        _unwrapDocumentReference(ref)!,
+        documentDataToFlutterData(DocumentData(data)),
+      );
 }
 
 // for both native and not
@@ -206,7 +224,8 @@ dynamic toNativeValue(Object? value) {
     return toNativeValues(value);
   } else if (value is Map) {
     return value.map<String, Object?>(
-        (key, value) => MapEntry(key as String, toNativeValue(value)));
+      (key, value) => MapEntry(key as String, toNativeValue(value)),
+    );
   } else if (value is FieldValue) {
     if (FieldValue.delete == value) {
       return native.FieldValue.delete();
@@ -223,7 +242,9 @@ dynamic toNativeValue(Object? value) {
     return native.Blob(value.data);
   } else if (value is GeoPoint) {
     return native.GeoPoint(
-        value.latitude.toDouble(), value.longitude.toDouble());
+      value.latitude.toDouble(),
+      value.longitude.toDouble(),
+    );
   } else if (value is VectorValue) {
     return native.VectorValue(value.toArray());
   }
@@ -240,15 +261,19 @@ dynamic fromNativeValue(Firestore firestore, Object? nativeValue) {
         .map((nativeValue) => fromNativeValue(firestore, nativeValue))
         .toList();
   } else if (nativeValue is Map) {
-    return nativeValue.map<String, Object?>((key, nativeValue) =>
-        MapEntry(key as String, fromNativeValue(firestore, nativeValue)));
+    return nativeValue.map<String, Object?>(
+      (key, nativeValue) =>
+          MapEntry(key as String, fromNativeValue(firestore, nativeValue)),
+    );
   } else if (native.FieldValue.delete() == nativeValue) {
     return FieldValue.delete;
   } else if (native.FieldValue.serverTimestamp() == nativeValue) {
     return FieldValue.serverTimestamp;
   } else if (nativeValue is native.DocumentReference) {
-    return DocumentReferenceFlutter(firestore,
-        (nativeValue as native.DocumentReference<Map<String, Object?>>));
+    return DocumentReferenceFlutter(
+      firestore,
+      (nativeValue as native.DocumentReference<Map<String, Object?>>),
+    );
   } else if (nativeValue is native.Blob) {
     return Blob(nativeValue.bytes);
   } else if (nativeValue is native.GeoPoint) {
@@ -275,9 +300,10 @@ DocumentData documentDataFromFlutterData(Firestore firestore, Map nativeMap) {
   return DocumentData(map);
 }
 
-QueryFlutter _wrapQuery(Firestore firestore,
-        native.Query<Map<String, Object?>> nativeInstance) =>
-    QueryFlutter(firestore, nativeInstance);
+QueryFlutter _wrapQuery(
+  Firestore firestore,
+  native.Query<Map<String, Object?>> nativeInstance,
+) => QueryFlutter(firestore, nativeInstance);
 
 class QueryFlutter
     with QueryDefaultMixin, FirestoreQueryExecutorMixin
@@ -291,13 +317,17 @@ class QueryFlutter
   @override
   Query endAt({DocumentSnapshot? snapshot, List? values}) {
     return _wrapQuery(
-        firestore, nativeInstance.endAt(toNativeValue(values) as List));
+      firestore,
+      nativeInstance.endAt(toNativeValue(values) as List),
+    );
   }
 
   @override
   Query endBefore({DocumentSnapshot? snapshot, List? values}) {
     return _wrapQuery(
-        firestore, nativeInstance.endBefore(toNativeValue(values) as List));
+      firestore,
+      nativeInstance.endBefore(toNativeValue(values) as List),
+    );
   }
 
   @override
@@ -315,11 +345,14 @@ class QueryFlutter
 
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    var transformer = StreamTransformer.fromHandlers(handleData:
-        (native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
-            EventSink<QuerySnapshot> sink) {
-      sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
-    });
+    var transformer = StreamTransformer.fromHandlers(
+      handleData: (
+        native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
+        EventSink<QuerySnapshot> sink,
+      ) {
+        sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
+      },
+    );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
         .transform(transformer);
@@ -328,15 +361,20 @@ class QueryFlutter
   @override
   Query orderBy(String key, {bool? descending}) {
     return _wrapQuery(
-        firestore, nativeInstance.orderBy(key, descending: descending == true));
+      firestore,
+      nativeInstance.orderBy(key, descending: descending == true),
+    );
   }
 
   @override
   Query orderById({bool? descending}) {
     return _wrapQuery(
-        firestore,
-        nativeInstance.orderBy(native.FieldPath.documentId,
-            descending: descending == true));
+      firestore,
+      nativeInstance.orderBy(
+        native.FieldPath.documentId,
+        descending: descending == true,
+      ),
+    );
   }
 
   @override
@@ -348,71 +386,98 @@ class QueryFlutter
   @override
   Query startAfter({DocumentSnapshot? snapshot, List? values}) {
     if (snapshot != null) {
-      return _wrapQuery(firestore,
-          nativeInstance.startAfterDocument(snapshot.flutter.nativeInstance));
+      return _wrapQuery(
+        firestore,
+        nativeInstance.startAfterDocument(snapshot.flutter.nativeInstance),
+      );
     } else {
       return _wrapQuery(
-          firestore, nativeInstance.startAfter(toNativeValue(values) as List));
+        firestore,
+        nativeInstance.startAfter(toNativeValue(values) as List),
+      );
     }
   }
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List? values}) {
     if (snapshot != null) {
-      return _wrapQuery(firestore,
-          nativeInstance.startAtDocument(snapshot.flutter.nativeInstance));
+      return _wrapQuery(
+        firestore,
+        nativeInstance.startAtDocument(snapshot.flutter.nativeInstance),
+      );
     } else {
       return _wrapQuery(
-          firestore, nativeInstance.startAt(toNativeValue(values) as List));
+        firestore,
+        nativeInstance.startAt(toNativeValue(values) as List),
+      );
     }
   }
 
   @override
-  Query where(String fieldPath,
-      {Object? isEqualTo = notSetQueryParam,
-      Object? isLessThan = notSetQueryParam,
-      Object? isLessThanOrEqualTo = notSetQueryParam,
-      Object? isGreaterThan = notSetQueryParam,
-      Object? isGreaterThanOrEqualTo = notSetQueryParam,
-      Object? arrayContains = notSetQueryParam,
-      List<Object?>? arrayContainsAny,
-      List<Object?>? whereIn,
-      bool? isNull}) {
+  Query where(
+    String fieldPath, {
+    Object? isEqualTo = notSetQueryParam,
+    Object? isLessThan = notSetQueryParam,
+    Object? isLessThanOrEqualTo = notSetQueryParam,
+    Object? isGreaterThan = notSetQueryParam,
+    Object? isGreaterThanOrEqualTo = notSetQueryParam,
+    Object? arrayContains = notSetQueryParam,
+    List<Object?>? arrayContainsAny,
+    List<Object?>? whereIn,
+    bool? isNull,
+  }) {
     if (isEqualTo != notSetQueryParam) {
-      return _wrapQuery(firestore,
-          nativeInstance.where(fieldPath, isEqualTo: toNativeValue(isEqualTo)));
+      return _wrapQuery(
+        firestore,
+        nativeInstance.where(fieldPath, isEqualTo: toNativeValue(isEqualTo)),
+      );
     } else if (isLessThan != notSetQueryParam) {
       return _wrapQuery(
-          firestore,
-          nativeInstance.where(fieldPath,
-              isLessThan: toNativeValue(isLessThan)));
+        firestore,
+        nativeInstance.where(fieldPath, isLessThan: toNativeValue(isLessThan)),
+      );
     } else if (isLessThanOrEqualTo != notSetQueryParam) {
       return _wrapQuery(
-          firestore,
-          nativeInstance.where(fieldPath,
-              isLessThanOrEqualTo: toNativeValue(isLessThanOrEqualTo)));
+        firestore,
+        nativeInstance.where(
+          fieldPath,
+          isLessThanOrEqualTo: toNativeValue(isLessThanOrEqualTo),
+        ),
+      );
     } else if (isGreaterThan != notSetQueryParam) {
       return _wrapQuery(
-          firestore,
-          nativeInstance.where(fieldPath,
-              isGreaterThan: toNativeValue(isGreaterThan)));
+        firestore,
+        nativeInstance.where(
+          fieldPath,
+          isGreaterThan: toNativeValue(isGreaterThan),
+        ),
+      );
     } else if (isGreaterThanOrEqualTo != notSetQueryParam) {
       return _wrapQuery(
-          firestore,
-          nativeInstance.where(fieldPath,
-              isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo)));
+        firestore,
+        nativeInstance.where(
+          fieldPath,
+          isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo),
+        ),
+      );
     } else if (arrayContains != notSetQueryParam) {
       return _wrapQuery(
-          firestore,
-          nativeInstance.where(fieldPath,
-              arrayContains: toNativeValue(arrayContains)));
+        firestore,
+        nativeInstance.where(
+          fieldPath,
+          arrayContains: toNativeValue(arrayContains),
+        ),
+      );
     }
     return _wrapQuery(
-        firestore,
-        nativeInstance.where(fieldPath,
-            arrayContainsAny: toNativeValues(arrayContainsAny),
-            whereIn: toNativeValues(whereIn),
-            isNull: isNull));
+      firestore,
+      nativeInstance.where(
+        fieldPath,
+        arrayContainsAny: toNativeValues(arrayContainsAny),
+        whereIn: toNativeValues(whereIn),
+        isNull: isNull,
+      ),
+    );
   }
 
   @override
@@ -435,8 +500,10 @@ mixin PathReferenceFlutterMixin {
 class CollectionReferenceFlutter extends QueryFlutter
     with PathReferenceFlutterMixin
     implements CollectionReference {
-  CollectionReferenceFlutter(super.firestore,
-      native.CollectionReference<Map<String, Object?>> super.nativeInstance);
+  CollectionReferenceFlutter(
+    super.firestore,
+    native.CollectionReference<Map<String, Object?>> super.nativeInstance,
+  );
 
   @override
   native.CollectionReference<Map<String, Object?>> get nativeInstance =>
@@ -445,9 +512,9 @@ class CollectionReferenceFlutter extends QueryFlutter
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
       wrapDocumentReference(
-          firestore,
-          await nativeInstance
-              .add(documentDataToFlutterData(DocumentData(data))));
+        firestore,
+        await nativeInstance.add(documentDataToFlutterData(DocumentData(data))),
+      );
 
   @override
   DocumentReference doc([String? path]) {
@@ -464,7 +531,9 @@ class CollectionReferenceFlutter extends QueryFlutter
       return null;
     }
     return wrapDocumentReference(
-        firestore, nativeInstance.firestore.doc(url.dirname(path)));
+      firestore,
+      nativeInstance.firestore.doc(url.dirname(path)),
+    );
   }
 
   @override
@@ -475,31 +544,37 @@ class CollectionReferenceFlutter extends QueryFlutter
 }
 
 native.DocumentReference<Map<String, Object?>>? _unwrapDocumentReference(
-        DocumentReference ref) =>
-    (ref as DocumentReferenceFlutter).nativeInstance;
+  DocumentReference ref,
+) => (ref as DocumentReferenceFlutter).nativeInstance;
 
-CollectionReferenceFlutter _wrapCollectionReference(Firestore firestore,
-        native.CollectionReference<Map<String, Object?>> nativeInstance) =>
-    CollectionReferenceFlutter(firestore, nativeInstance);
+CollectionReferenceFlutter _wrapCollectionReference(
+  Firestore firestore,
+  native.CollectionReference<Map<String, Object?>> nativeInstance,
+) => CollectionReferenceFlutter(firestore, nativeInstance);
 
-DocumentReferenceFlutter wrapDocumentReference(Firestore firestore,
-        native.DocumentReference<Map<String, Object?>> nativeInstance) =>
-    DocumentReferenceFlutter(firestore, nativeInstance);
+DocumentReferenceFlutter wrapDocumentReference(
+  Firestore firestore,
+  native.DocumentReference<Map<String, Object?>> nativeInstance,
+) => DocumentReferenceFlutter(firestore, nativeInstance);
 
-QuerySnapshotFlutter _wrapQuerySnapshot(Firestore firestore,
-        native.QuerySnapshot<Map<String, Object?>> nativeInstance) =>
-    QuerySnapshotFlutter(firestore, nativeInstance);
+QuerySnapshotFlutter _wrapQuerySnapshot(
+  Firestore firestore,
+  native.QuerySnapshot<Map<String, Object?>> nativeInstance,
+) => QuerySnapshotFlutter(firestore, nativeInstance);
 
-DocumentSnapshotFlutter _wrapDocumentSnapshot(Firestore firestore,
-        native.DocumentSnapshot<Map<String, Object?>> nativeInstance) =>
-    DocumentSnapshotFlutter(firestore, nativeInstance);
+DocumentSnapshotFlutter _wrapDocumentSnapshot(
+  Firestore firestore,
+  native.DocumentSnapshot<Map<String, Object?>> nativeInstance,
+) => DocumentSnapshotFlutter(firestore, nativeInstance);
 
-DocumentChangeFlutter _wrapDocumentChange(Firestore firestore,
-        native.DocumentChange<Map<String, Object?>> nativeInstance) =>
-    DocumentChangeFlutter(firestore, nativeInstance);
+DocumentChangeFlutter _wrapDocumentChange(
+  Firestore firestore,
+  native.DocumentChange<Map<String, Object?>> nativeInstance,
+) => DocumentChangeFlutter(firestore, nativeInstance);
 
 DocumentChangeType? _wrapDocumentChangeType(
-    native.DocumentChangeType nativeInstance) {
+  native.DocumentChangeType nativeInstance,
+) {
   switch (nativeInstance) {
     case native.DocumentChangeType.added:
       return DocumentChangeType.added;
@@ -535,20 +610,24 @@ class DocumentReferenceFlutter
 
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    var transformer = StreamTransformer.fromHandlers(handleData:
-        (native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
-            EventSink<DocumentSnapshot> sink) {
-      // devPrint('$this onSnapshot ${nativeDocumentSnapshot.data()}');
-      try {
-        sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
-      } catch (e) {
-        if (kDebugMode) {
-          print(
-              'onSnapshot.error ${nativeDocumentSnapshot.reference.path}: $e');
+    var transformer = StreamTransformer.fromHandlers(
+      handleData: (
+        native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
+        EventSink<DocumentSnapshot> sink,
+      ) {
+        // devPrint('$this onSnapshot ${nativeDocumentSnapshot.data()}');
+        try {
+          sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              'onSnapshot.error ${nativeDocumentSnapshot.reference.path}: $e',
+            );
+          }
+          rethrow;
         }
-        rethrow;
-      }
-    });
+      },
+    );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
         .transform(transformer);
@@ -557,15 +636,19 @@ class DocumentReferenceFlutter
   // _TODO: implement parent
   @override
   CollectionReference get parent => _wrapCollectionReference(
-      firestore, nativeInstance.firestore.collection(url.dirname(path)));
+    firestore,
+    nativeInstance.firestore.collection(url.dirname(path)),
+  );
 
   @override
   String get path => nativeInstance.path;
 
   @override
   Future set(Map<String, Object?> data, [SetOptions? options]) =>
-      nativeInstance.set(documentDataToFlutterData(DocumentData(data)),
-          unwrapSetOption(options));
+      nativeInstance.set(
+        documentDataToFlutterData(DocumentData(data)),
+        unwrapSetOption(options),
+      );
 
   @override
   Future update(Map<String, Object?> data) =>
@@ -582,14 +665,21 @@ class QuerySnapshotFlutter implements QuerySnapshot {
   QuerySnapshotFlutter(this.firestore, this.nativeInstance);
 
   @override
-  List<DocumentSnapshot> get docs => nativeInstance.docs
-      .map((nativeInstance) => _wrapDocumentSnapshot(firestore, nativeInstance))
-      .toList();
+  List<DocumentSnapshot> get docs =>
+      nativeInstance.docs
+          .map(
+            (nativeInstance) =>
+                _wrapDocumentSnapshot(firestore, nativeInstance),
+          )
+          .toList();
 
   @override
-  List<DocumentChange> get documentChanges => nativeInstance.docChanges
-      .map((nativeInstance) => _wrapDocumentChange(firestore, nativeInstance))
-      .toList();
+  List<DocumentChange> get documentChanges =>
+      nativeInstance.docChanges
+          .map(
+            (nativeInstance) => _wrapDocumentChange(firestore, nativeInstance),
+          )
+          .toList();
 }
 
 class DocumentChangeFlutter implements DocumentChange {

@@ -14,12 +14,18 @@ abstract class FirebaseVertexAiServiceFlutter
     implements FirebaseVertexAiService {
   /// Optionnal auth service
   ///
-  factory FirebaseVertexAiServiceFlutter(
-      {FirebaseAuthService? authService, String? location}) {
-    assert(authService is FirebaseAuthServiceFlutter?,
-        'authService should be a FirebaseAuthServiceFlutter');
+  factory FirebaseVertexAiServiceFlutter({
+    FirebaseAuthService? authService,
+    String? location,
+  }) {
+    assert(
+      authService is FirebaseAuthServiceFlutter?,
+      'authService should be a FirebaseAuthServiceFlutter',
+    );
     return _FirebaseVertexAiServiceFlutter(
-        authServiceFlutter: authService, location: location);
+      authServiceFlutter: authService,
+      location: location,
+    );
   }
 }
 
@@ -37,9 +43,10 @@ class _FirebaseVertexAiServiceFlutter
       var appFlutter = app as FirebaseAppFlutter;
       var nativeAuth = authServiceFlutter?.auth(app).nativeInstance;
       var fbVertexAi = fb.FirebaseVertexAI.instanceFor(
-          app: appFlutter.nativeInstance!,
-          auth: nativeAuth,
-          location: location);
+        app: appFlutter.nativeInstance!,
+        auth: nativeAuth,
+        location: location,
+      );
       return _FirebaseVertexAiFlutter(this, appFlutter, fbVertexAi);
     });
   }
@@ -53,18 +60,24 @@ class _FirebaseVertexAiFlutter
   final fb.FirebaseVertexAI fbVertexAi;
 
   _FirebaseVertexAiFlutter(
-      this.serviceFlutter, this.appFlutter, this.fbVertexAi);
+    this.serviceFlutter,
+    this.appFlutter,
+    this.fbVertexAi,
+  );
 
   @override
   FirebaseApp get app => appFlutter;
 
   @override
-  VaiGenerativeModel generativeModel(
-      {String? model, GenerationConfig? generationConfig}) {
+  VaiGenerativeModel generativeModel({
+    String? model,
+    GenerationConfig? generationConfig,
+  }) {
     model ??= vertexAiModelGemini1dot5Flash;
     var nativeModel = fbVertexAi.generativeModel(
-        model: model,
-        generationConfig: generationConfig?.toFbGenerationConfig());
+      model: model,
+      generationConfig: generationConfig?.toFbGenerationConfig(),
+    );
     return VaiGenerativeModelFlutter(this, nativeModel);
   }
 }
@@ -93,27 +106,31 @@ extension on SchemaType {
 
 extension on Schema {
   fb.Schema toFbSchema() {
-    return fb.Schema(type.toFbSchemaType(),
-        items: items?.toFbSchema(),
-        format: format,
-        description: description,
-        enumValues: enumValues,
-        nullable: nullable,
-        properties:
-            properties?.map((key, value) => MapEntry(key, value.toFbSchema())),
-        optionalProperties: optionalProperties);
+    return fb.Schema(
+      type.toFbSchemaType(),
+      items: items?.toFbSchema(),
+      format: format,
+      description: description,
+      enumValues: enumValues,
+      nullable: nullable,
+      properties: properties?.map(
+        (key, value) => MapEntry(key, value.toFbSchema()),
+      ),
+      optionalProperties: optionalProperties,
+    );
   }
 }
 
 extension on GenerationConfig {
   fb.GenerationConfig toFbGenerationConfig() {
     return fb.GenerationConfig(
-        candidateCount: candidateCount,
-        maxOutputTokens: maxOutputTokens,
-        temperature: temperature,
-        topP: topP,
-        topK: topK,
-        responseMimeType: responseMimeType,
-        responseSchema: responseSchema?.toFbSchema());
+      candidateCount: candidateCount,
+      maxOutputTokens: maxOutputTokens,
+      temperature: temperature,
+      topP: topP,
+      topK: topK,
+      responseMimeType: responseMimeType,
+      responseSchema: responseSchema?.toFbSchema(),
+    );
   }
 }

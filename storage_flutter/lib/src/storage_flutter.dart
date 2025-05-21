@@ -22,10 +22,16 @@ class StorageServiceFlutter
       var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
         return StorageFlutter(
-            this, appFlutter, native.FirebaseStorage.instance);
+          this,
+          appFlutter,
+          native.FirebaseStorage.instance,
+        );
       } else {
-        return StorageFlutter(this, appFlutter,
-            native.FirebaseStorage.instanceFor(app: appFlutter.nativeInstance));
+        return StorageFlutter(
+          this,
+          appFlutter,
+          native.FirebaseStorage.instanceFor(app: appFlutter.nativeInstance),
+        );
       }
     });
   }
@@ -149,7 +155,7 @@ class BucketFlutter with BucketMixin implements Bucket {
   final String name;
 
   BucketFlutter(this.storage, String? name)
-      : name = name ?? storage.firebaseStorage.bucket;
+    : name = name ?? storage.firebaseStorage.bucket;
 
   Future<native.Reference> getReferenceFromName(String name) async {
     var ref = storage.firebaseStorage
@@ -159,7 +165,8 @@ class BucketFlutter with BucketMixin implements Bucket {
   }
 
   Future<GetFilesResponse> _getNextFiles(
-      _GetFileOptionsFlutter optionsFlutter) async {
+    _GetFileOptionsFlutter optionsFlutter,
+  ) async {
     var maxResultsDefault = optionsFlutter.maxResults ?? 100;
 
     var allFiles = optionsFlutter._nextFiles?.toList() ?? <FileFlutter>[];
@@ -171,13 +178,15 @@ class BucketFlutter with BucketMixin implements Bucket {
 
       // devPrint('getFiles nextFiles: ${allFiles.map((file) => file.path)}');
       var nextQuery = optionsFlutter._copyWith(
-          maxResults: maxResultsDefault - taken,
-          nextFiles: allFiles.sublist(taken));
+        maxResults: maxResultsDefault - taken,
+        nextFiles: allFiles.sublist(taken),
+      );
       return GetFilesResponse(files: files, nextQuery: nextQuery);
     }
     var listOptions = native.ListOptions(
-        maxResults: optionsFlutter.maxResults,
-        pageToken: optionsFlutter.pageToken);
+      maxResults: optionsFlutter.maxResults,
+      pageToken: optionsFlutter.pageToken,
+    );
 
     var queryPrefix = optionsFlutter._nextPrefix ?? optionsFlutter.prefix ?? '';
     var ref = await getReferenceFromName(queryPrefix);
@@ -188,25 +197,34 @@ class BucketFlutter with BucketMixin implements Bucket {
     // items: (file1.txt test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/file1.txt),
     // prefixes (other_sub test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/other_sub)
     // dGVzdC96cTRUaE9QWlN1NFFFSFl4Q3Bsay90ZXN0L2xpc3RfZmlsZXMveWVzL290aGVyX3N1Yi8=
-    var files = nativeResponse.items
-        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
-        .toList();
-    var prefixes = nativeResponse.prefixes
-        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
-        .toList();
+    var files =
+        nativeResponse.items
+            .map(
+              (nativeReference) => FileFlutter(this, nativeReference.fullPath),
+            )
+            .toList();
+    var prefixes =
+        nativeResponse.prefixes
+            .map(
+              (nativeReference) => FileFlutter(this, nativeReference.fullPath),
+            )
+            .toList();
     allPrefixes.addAll(prefixes);
     if (nativeResponse.nextPageToken != null) {
       // devPrint('nextPageToken ${nativeResponse.nextPageToken}');
       var nextQuery = optionsFlutter._copyWith(
-          pageToken: nativeResponse.nextPageToken, nextPrefixes: allPrefixes);
+        pageToken: nativeResponse.nextPageToken,
+        nextPrefixes: allPrefixes,
+      );
       return GetFilesResponse(files: files, nextQuery: nextQuery);
     }
     if (allPrefixes.isNotEmpty) {
       var prefix = allPrefixes.removeAt(0);
       var nextQuery = optionsFlutter._copyWith(
-          nextPrefix: prefix.path,
-          nextPrefixes: allPrefixes,
-          nullPageToken: true);
+        nextPrefix: prefix.path,
+        nextPrefixes: allPrefixes,
+        nullPageToken: true,
+      );
       return GetFilesResponse(files: files, nextQuery: nextQuery);
     }
     return GetFilesResponse(files: files, nextQuery: null);
@@ -303,41 +321,43 @@ class _GetFileOptionsFlutter implements GetFilesOptions {
   @override
   final String? pageToken;
 
-  _GetFileOptionsFlutter(
-      {this.maxResults,
-      this.prefix,
-      this.pageToken,
-      this.autoPaginate = true,
-      List<FileFlutter>? nextPrefixes,
-      String? nextPrefix,
-      List<FileFlutter>? nextFiles})
-      : _nextFiles = nextFiles,
-        _nextPrefixes = nextPrefixes,
-        _nextPrefix = nextPrefix;
+  _GetFileOptionsFlutter({
+    this.maxResults,
+    this.prefix,
+    this.pageToken,
+    this.autoPaginate = true,
+    List<FileFlutter>? nextPrefixes,
+    String? nextPrefix,
+    List<FileFlutter>? nextFiles,
+  }) : _nextFiles = nextFiles,
+       _nextPrefixes = nextPrefixes,
+       _nextPrefix = nextPrefix;
 
   @override
-  String toString() => {
+  String toString() =>
+      {
         if (maxResults != null) 'maxResults': maxResults,
         if (prefix != null) 'prefix': prefix,
         if (_nextPrefix != null) 'nextPrefix': _nextPrefix,
         if (_nextPrefixes != null) 'nextPrefixes': _nextPrefixes,
         if (_nextFiles != null) 'nextFiles': _nextFiles,
         'autoPaginate': autoPaginate,
-        if (pageToken != null) 'pageToken': pageToken
+        if (pageToken != null) 'pageToken': pageToken,
       }.toString();
 
   // Copy options
 
-  GetFilesOptions _copyWith(
-      {int? maxResults,
-      String? prefix,
-      bool? autoPaginate,
-      String? pageToken,
-      bool? nullPageToken,
-      List<FileFlutter>? nextPrefixes,
-      List<FileFlutter>? nextFiles,
-      String? nextPrefix,
-      bool? nullNextPrefix}) {
+  GetFilesOptions _copyWith({
+    int? maxResults,
+    String? prefix,
+    bool? autoPaginate,
+    String? pageToken,
+    bool? nullPageToken,
+    List<FileFlutter>? nextPrefixes,
+    List<FileFlutter>? nextFiles,
+    String? nextPrefix,
+    bool? nullNextPrefix,
+  }) {
     return _GetFileOptionsFlutter(
       maxResults: maxResults ?? this.maxResults,
       prefix: prefix ?? this.prefix,
@@ -351,16 +371,17 @@ class _GetFileOptionsFlutter implements GetFilesOptions {
   }
 
   @override
-  GetFilesOptions copyWith(
-          {int? maxResults,
-          String? prefix,
-          bool? autoPaginate,
-          String? pageToken}) =>
-      _copyWith(
-          maxResults: maxResults,
-          prefix: prefix,
-          autoPaginate: autoPaginate,
-          pageToken: pageToken);
+  GetFilesOptions copyWith({
+    int? maxResults,
+    String? prefix,
+    bool? autoPaginate,
+    String? pageToken,
+  }) => _copyWith(
+    maxResults: maxResults,
+    prefix: prefix,
+    autoPaginate: autoPaginate,
+    pageToken: pageToken,
+  );
 }
 
 extension _GetFilesOptionsExt on GetFilesOptions {
@@ -369,9 +390,10 @@ extension _GetFilesOptionsExt on GetFilesOptions {
       return this as _GetFileOptionsFlutter;
     }
     return _GetFileOptionsFlutter(
-        maxResults: maxResults,
-        prefix: prefix,
-        pageToken: pageToken,
-        autoPaginate: autoPaginate);
+      maxResults: maxResults,
+      prefix: prefix,
+      pageToken: pageToken,
+      autoPaginate: autoPaginate,
+    );
   }
 }

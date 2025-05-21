@@ -20,11 +20,13 @@ void main() {
     test('app_options', () {
       // ignore: omit_local_variable_types
       FirebaseAppOptions options = firebaseFlutter.wrapOptions(
-          const core.FirebaseOptions(
-              projectId: 'test',
-              apiKey: 'api',
-              appId: 'app',
-              messagingSenderId: 'sender'));
+        const core.FirebaseOptions(
+          projectId: 'test',
+          apiKey: 'api',
+          appId: 'app',
+          messagingSenderId: 'sender',
+        ),
+      );
       expect(options.projectId, 'test');
       expect(options.apiKey, 'api');
       expect(options.appId, 'app');

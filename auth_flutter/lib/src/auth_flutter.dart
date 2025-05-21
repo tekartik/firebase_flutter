@@ -19,11 +19,16 @@ class AuthServiceFlutterImpl
   @override
   FirebaseAuthFlutter auth(common.App app) {
     return getInstance(app, () {
-      assert(app is firebase_flutter.FirebaseAppFlutter,
-          'invalid firebase app type');
+      assert(
+        app is firebase_flutter.FirebaseAppFlutter,
+        'invalid firebase app type',
+      );
       final appFlutter = app as firebase_flutter.FirebaseAppFlutter;
-      return AuthFlutterImpl(this, appFlutter,
-          native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance!));
+      return AuthFlutterImpl(
+        this,
+        appFlutter,
+        native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance!),
+      );
     });
   }
 
@@ -100,8 +105,7 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
   String? get photoURL => nativeInstance.photoURL;
 
   @override
-  String? get providerId =>
-      null; // no longer supported - nativeInstance.providerId;
+  String? get providerId => null; // no longer supported - nativeInstance.providerId;
 
   @override
   String get uid => nativeInstance.uid;
@@ -130,8 +134,9 @@ class AuthFlutterImpl
 
   void _listenToCurrentUser() {
     _onAuthStateChangedSubscription?.cancel();
-    _onAuthStateChangedSubscription =
-        nativeAuth.authStateChanges().listen((user) {
+    _onAuthStateChangedSubscription = nativeAuth.authStateChanges().listen((
+      user,
+    ) {
       currentUserAdd(wrapUser(user));
     });
   }
@@ -142,7 +147,9 @@ class AuthFlutterImpl
     required String password,
   }) async {
     var userCredential = await nativeAuth.signInWithEmailAndPassword(
-        email: email, password: password);
+      email: email,
+      password: password,
+    );
     return UserCredentialFlutter(userCredential);
   }
 
@@ -235,8 +242,10 @@ class AuthFlutterImpl
   }
 
   @override
-  Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions? options}) async {
+  Future<AuthSignInResult> signIn(
+    AuthProvider authProvider, {
+    AuthSignInOptions? options,
+  }) async {
     //devPrint('signIn($authProvider, $options)');
     if (authProvider is GoogleAuthProvider) {
       //devPrint('google');
@@ -246,8 +255,9 @@ class AuthFlutterImpl
       if (options is AuthSignInOptionsWeb) {
         if (options.isPopup) {
           //devPrint('popup');
-          var credentials =
-              await nativeAuth.signInWithPopup(nativeAuthProvider);
+          var credentials = await nativeAuth.signInWithPopup(
+            nativeAuthProvider,
+          );
           //devPrint('popup done');
           return AuthSignInResultFlutter(credentials);
         } else {
@@ -258,8 +268,9 @@ class AuthFlutterImpl
           //return AuthSignInResultFlutter(credentials);
         }
       } else {
-        var credentials =
-            await nativeAuth.signInWithProvider(nativeAuthProvider);
+        var credentials = await nativeAuth.signInWithProvider(
+          nativeAuthProvider,
+        );
         return AuthSignInResultFlutter(credentials);
       }
     }
@@ -305,9 +316,9 @@ extension FirebaseAuthFlutterExtension on Auth {
   /// Web only
   Future<void> webSetIndexedDbPersistence() async {
     if (kIsWeb && this is AuthFlutterImpl) {
-      await (this as AuthFlutterImpl)
-          .nativeAuth
-          .setPersistence(native.Persistence.LOCAL); // indexedDB
+      await (this as AuthFlutterImpl).nativeAuth.setPersistence(
+        native.Persistence.LOCAL,
+      ); // indexedDB
     }
   }
 

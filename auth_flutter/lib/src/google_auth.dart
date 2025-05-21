@@ -52,7 +52,8 @@ extension AuthFlutterImplGoogle on Auth {
 
   /// Native google sign in
   Future<AuthSignInResult> nativeGoogleSignIn(
-      GoogleAuthProvider provider) async {
+    GoogleAuthProvider provider,
+  ) async {
     late native.AuthCredential credential;
     if (_debug) {
       if (kDebugMode) {
@@ -75,8 +76,9 @@ extension AuthFlutterImplGoogle on Auth {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    final credentials =
-        (await firebaseNativeAuth.signInWithCredential(credential));
+    final credentials = (await firebaseNativeAuth.signInWithCredential(
+      credential,
+    ));
     return AuthSignInResultFlutter(credentials);
   }
 
@@ -123,8 +125,9 @@ extension AuthFlutterImplGoogle on Auth {
     }
     try {
       // Once signed in, return the UserCredential
-      var credentials =
-          await firebaseNativeAuth.signInWithPopup(googleProvider);
+      var credentials = await firebaseNativeAuth.signInWithPopup(
+        googleProvider,
+      );
       if (_debug) {
         if (kDebugMode) {
           print('Google signed in $credentials');

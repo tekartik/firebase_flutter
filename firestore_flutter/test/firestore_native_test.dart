@@ -6,14 +6,14 @@ void main() {
     test('epoch', () {
       var timestamp = Timestamp(1, 123000000);
       expect(
-          Timestamp.fromMillisecondsSinceEpoch(
-              timestamp.millisecondsSinceEpoch),
-          timestamp);
+        Timestamp.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch),
+        timestamp,
+      );
       timestamp = Timestamp(1, 123456000);
       expect(
-          Timestamp.fromMicrosecondsSinceEpoch(
-              timestamp.microsecondsSinceEpoch),
-          timestamp);
+        Timestamp.fromMicrosecondsSinceEpoch(timestamp.microsecondsSinceEpoch),
+        timestamp,
+      );
     });
   });
 }

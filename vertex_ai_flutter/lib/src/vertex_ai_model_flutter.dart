@@ -41,9 +41,11 @@ class VaiGenerativeModelFlutter implements VaiGenerativeModel {
 
   @override
   Future<VaiGenerateContentResponse> generateContent(
-      Iterable<VaiContent> prompt) async {
-    var nativeResponse =
-        await nativeInstance.generateContent(prompt.toNative());
+    Iterable<VaiContent> prompt,
+  ) async {
+    var nativeResponse = await nativeInstance.generateContent(
+      prompt.toNative(),
+    );
     return VaiGenerateContentResponseFlutter(nativeResponse);
   }
 }

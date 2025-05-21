@@ -24,8 +24,11 @@ class FirebaseFunctionsCallServiceFlutter
   /// Most implementation need a single instance, keep it in memory!
   final _instances = <String, FirebaseFunctionsCallFlutter>{};
 
-  FirebaseFunctionsCallFlutter _getInstance(App app, String region,
-      FirebaseFunctionsCallFlutter Function() createIfNotFound) {
+  FirebaseFunctionsCallFlutter _getInstance(
+    App app,
+    String region,
+    FirebaseFunctionsCallFlutter Function() createIfNotFound,
+  ) {
     var key = '${app.name}_$region';
     var instance = _instances[key];
     if (instance == null) {
@@ -36,17 +39,23 @@ class FirebaseFunctionsCallServiceFlutter
   }
 
   @override
-  FirebaseFunctionsCallFlutter functionsCall(App app,
-      {required String region, Uri? baseUri}) {
+  FirebaseFunctionsCallFlutter functionsCall(
+    App app, {
+    required String region,
+    Uri? baseUri,
+  }) {
     return _getInstance(app, region, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
 
       return FirebaseFunctionsCallFlutter(
-          this,
-          appFlutter,
-          native.FirebaseFunctions.instanceFor(
-              app: appFlutter.nativeInstance!, region: region));
+        this,
+        appFlutter,
+        native.FirebaseFunctions.instanceFor(
+          app: appFlutter.nativeInstance!,
+          region: region,
+        ),
+      );
     });
   }
 }
@@ -66,17 +75,20 @@ class FirebaseFunctionsCallFlutter
 
   /// Constructor
   FirebaseFunctionsCallFlutter(
-      this.serviceFlutter, this.appFlutter, this.nativeInstance);
+    this.serviceFlutter,
+    this.appFlutter,
+    this.nativeInstance,
+  );
 
   @override
-  FirebaseFunctionsCallableFlutter callable(String name,
-      {FirebaseFunctionsCallableOptions? options}) {
+  FirebaseFunctionsCallableFlutter callable(
+    String name, {
+    FirebaseFunctionsCallableOptions? options,
+  }) {
     return FirebaseFunctionsCallableFlutter(
-        this,
-        nativeInstance.httpsCallable(
-          name,
-          options: options?.nativeInstance,
-        ));
+      this,
+      nativeInstance.httpsCallable(name, options: options?.nativeInstance),
+    );
   }
 
   @override
@@ -88,7 +100,9 @@ class FirebaseFunctionsCallFlutter
 
 extension on FirebaseFunctionsCallableOptions {
   native.HttpsCallableOptions get nativeInstance => native.HttpsCallableOptions(
-      timeout: timeout, limitedUseAppCheckToken: limitedUseAppCheckToken);
+    timeout: timeout,
+    limitedUseAppCheckToken: limitedUseAppCheckToken,
+  );
 }
 
 /// Firebase functions callable flutter.
@@ -101,14 +115,18 @@ class FirebaseFunctionsCallableFlutter implements FirebaseFunctionsCallable {
 
   /// Constructor
   FirebaseFunctionsCallableFlutter(
-      this.functionsCallFlutter, this.nativeInstance);
+    this.functionsCallFlutter,
+    this.nativeInstance,
+  );
 
   @override
-  Future<FirebaseFunctionsCallableResultFlutter<T>> call<T>(
-      [Object? parameters]) async {
+  Future<FirebaseFunctionsCallableResultFlutter<T>> call<T>([
+    Object? parameters,
+  ]) async {
     try {
       return FirebaseFunctionsCallableResultFlutter(
-          await nativeInstance.call<T>(parameters));
+        await nativeInstance.call<T>(parameters),
+      );
     } catch (e) {
       if (e is native.FirebaseFunctionsException) {
         throw HttpsErrorFlutter(e);
@@ -150,9 +168,6 @@ class HttpsErrorFlutter implements HttpsError {
   Object? get details => nativeInstance.details;
 
   @override
-  String toString() => 'https_error_fl ${{
-        'code': code,
-        'message': message,
-        if (details != null) 'details': details
-      }.toString()}';
+  String toString() =>
+      'https_error_fl ${{'code': code, 'message': message, if (details != null) 'details': details}.toString()}';
 }
