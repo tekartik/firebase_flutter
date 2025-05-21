@@ -1,17 +1,24 @@
-import 'package:firebase_vertexai/firebase_vertexai.dart' as fb;
+import 'package:firebase_ai/firebase_ai.dart' as fb;
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 import 'package:tekartik_firebase_vertex_ai/vertex_ai.dart';
 import 'package:tekartik_firebase_vertex_ai_flutter/src/vertex_ai_model_flutter.dart';
 
-/// Flutter service
+/// Flutter service using vertex ai
 final FirebaseVertexAiServiceFlutter firebaseVertexAiServiceFlutter =
     _FirebaseVertexAiServiceFlutter();
 
+/// Flutter service (with free-tier)
+final FirebaseGeminiAiServiceFlutter firebaseGeminiAiServiceFlutter =
+    _FirebaseGeminiAiServiceFlutter();
+
+/// Flutter service interface
+abstract class FirebaseAiServiceFlutter implements FirebaseVertexAiService {}
+
 /// Flutter service interface
 abstract class FirebaseVertexAiServiceFlutter
-    implements FirebaseVertexAiService {
+    implements FirebaseAiServiceFlutter {
   /// Optionnal auth service
   ///
   factory FirebaseVertexAiServiceFlutter({
@@ -29,6 +36,20 @@ abstract class FirebaseVertexAiServiceFlutter
   }
 }
 
+/// Flutter service interface
+abstract class FirebaseGeminiAiServiceFlutter
+    implements FirebaseAiServiceFlutter {
+  /// Optionnal auth service
+  ///
+  factory FirebaseGeminiAiServiceFlutter({FirebaseAuthService? authService}) {
+    assert(
+      authService is FirebaseAuthServiceFlutter?,
+      'authService should be a FirebaseAuthServiceFlutter',
+    );
+    return _FirebaseGeminiAiServiceFlutter(authServiceFlutter: authService);
+  }
+}
+
 class _FirebaseVertexAiServiceFlutter
     with FirebaseProductServiceMixin<FirebaseVertexAi>
     implements FirebaseVertexAiServiceFlutter {
@@ -42,7 +63,7 @@ class _FirebaseVertexAiServiceFlutter
     return getInstance(app, () {
       var appFlutter = app as FirebaseAppFlutter;
       var nativeAuth = authServiceFlutter?.auth(app).nativeInstance;
-      var fbVertexAi = fb.FirebaseVertexAI.instanceFor(
+      var fbVertexAi = fb.FirebaseAI.vertexAI(
         app: appFlutter.nativeInstance!,
         auth: nativeAuth,
         location: location,
@@ -52,12 +73,33 @@ class _FirebaseVertexAiServiceFlutter
   }
 }
 
+class _FirebaseGeminiAiServiceFlutter
+    with FirebaseProductServiceMixin<FirebaseVertexAi>
+    implements FirebaseGeminiAiServiceFlutter {
+  final FirebaseAuthService? authServiceFlutter;
+
+  _FirebaseGeminiAiServiceFlutter({this.authServiceFlutter});
+
+  @override
+  FirebaseVertexAiFlutter vertexAi(App app) {
+    return getInstance(app, () {
+      var appFlutter = app as FirebaseAppFlutter;
+      var nativeAuth = authServiceFlutter?.auth(app).nativeInstance;
+      var fbVertexAi = fb.FirebaseAI.googleAI(
+        app: appFlutter.nativeInstance!,
+        auth: nativeAuth,
+      );
+      return _FirebaseVertexAiFlutter(this, appFlutter, fbVertexAi);
+    });
+  }
+}
+
 class _FirebaseVertexAiFlutter
     with FirebaseAppProductMixin<FirebaseVertexAi>
     implements FirebaseVertexAiFlutter {
-  final FirebaseVertexAiServiceFlutter serviceFlutter;
+  final FirebaseAiServiceFlutter serviceFlutter;
   final FirebaseAppFlutter appFlutter;
-  final fb.FirebaseVertexAI fbVertexAi;
+  final fb.FirebaseAI fbVertexAi;
 
   _FirebaseVertexAiFlutter(
     this.serviceFlutter,

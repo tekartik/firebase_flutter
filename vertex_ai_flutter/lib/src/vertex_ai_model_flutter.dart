@@ -1,4 +1,4 @@
-import 'package:firebase_vertexai/firebase_vertexai.dart' as fb;
+import 'package:firebase_ai/firebase_ai.dart' as fb;
 import 'package:tekartik_firebase_vertex_ai/vertex_ai.dart';
 import 'package:tekartik_firebase_vertex_ai_flutter/src/vertex_ai_api_flutter.dart';
 import 'package:tekartik_firebase_vertex_ai_flutter/src/vertex_ai_flutter.dart';
