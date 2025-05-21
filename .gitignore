@@ -5,7 +5,7 @@
 .packages
 .pub/
 build/
-.flutter*
+.*
 
 # If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
@@ -22,7 +22,5 @@ doc/api/
 .idea/
 *.iml
 .vscode/
-/all_firebase_flutter/.flutter-plugins-dependencies
-/pubspec.yaml
 /pubspec.lock
 pubspec_overrides.yaml

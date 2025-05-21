@@ -1,0 +1,12 @@
+name: _
+publish_to: none
+environment:
+  sdk: ^3.7.0
+workspace:
+  - auth_flutter
+  - firebase_flutter
+  - firestore_flutter
+  - functions_call_flutter
+  - repo_support
+  - storage_flutter
+  - vertex_ai_flutter
