@@ -1,7 +1,6 @@
 // ignore_for_file: implementation_imports
 import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
@@ -174,66 +173,6 @@ class AuthFlutterImpl
     super.dispose();
   }
 
-  google_sign_in.GoogleSignIn? _googleSignIn;
-
-  /// Google only...
-  Future<AuthSignInResult?> nativeGoogleSignIn() async {
-    late native.AuthCredential credential;
-    _googleSignIn ??= google_sign_in.GoogleSignIn.instance;
-    final googleUser = await _googleSignIn!.authenticate();
-
-    final googleAuth = googleUser.authentication;
-    final authorization = await _googleSignIn!.authorizationClient
-        .authorizeScopes([]);
-    credential = native.GoogleAuthProvider.credential(
-      accessToken: authorization.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    final credentials = (await nativeAuth.signInWithCredential(credential));
-    return AuthSignInResultFlutter(credentials);
-  }
-
-  /// Google only...
-  @override
-  Future<User?> googleSignIn() async {
-    if (!kIsWeb) {
-      late native.AuthCredential credential;
-      _googleSignIn ??= google_sign_in.GoogleSignIn.instance;
-      final googleUser = await _googleSignIn!.authenticate();
-      final googleAuth = googleUser.authentication;
-      final authorization = await _googleSignIn!.authorizationClient
-          .authorizeScopes([]);
-      credential = native.GoogleAuthProvider.credential(
-        accessToken: authorization.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      final nativeUser = (await nativeAuth.signInWithCredential(
-        credential,
-      )).user;
-      return wrapUser(nativeUser);
-    } else {
-      var userCredentials = await webSignInWithGoogle();
-      final nativeUser = userCredentials.user;
-      return wrapUser(nativeUser);
-    }
-  }
-
-  /// Web google sign in
-  Future<native.UserCredential> webSignInWithGoogle() async {
-    // Create a new provider
-    var googleProvider = native.GoogleAuthProvider();
-
-    //googleProvider
-    //    .addScope('https://www.googleapis.com/auth/contacts.readonly');
-    //googleProvider.setCustomParameters({'login_hint': 'user@example.com'});
-
-    // Once signed in, return the UserCredential
-    return await native.FirebaseAuth.instance.signInWithPopup(googleProvider);
-
-    // Or use signInWithRedirect
-    // return await FirebaseAuth.instance.signInWithRedirect(googleProvider);
-  }
-
   @override
   Future signOut() async {
     await nativeAuth.signOut();
@@ -244,7 +183,7 @@ class AuthFlutterImpl
     AuthProvider authProvider, {
     AuthSignInOptions? options,
   }) async {
-     throw UnsupportedError('Unsupported provider ${authProvider.providerId}');
+    throw UnsupportedError('Unsupported provider ${authProvider.providerId}');
   }
 
   @override

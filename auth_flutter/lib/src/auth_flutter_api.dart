@@ -22,9 +22,6 @@ typedef AuthFlutter = FirebaseAuthFlutter;
 
 /// Browser sign in result
 abstract class FirebaseAuthFlutter implements Auth {
-  /// Sign in with popup
-  Future<User?> googleSignIn();
-
   /// The native instance
   native.FirebaseAuth get nativeInstance;
 }
