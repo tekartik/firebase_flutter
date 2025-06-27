@@ -7,7 +7,6 @@ export 'package:tekartik_firebase_auth/auth.dart';
 
 export 'auth_flutter_api.dart';
 export 'src/auth_flutter.dart' show FirebaseAuthFlutterExtension;
-export 'src/google_auth.dart' show GoogleAuthProvider;
 
 /// The flutter auth service
 FirebaseAuthService get authServiceFlutter => auth_flutter.authService;

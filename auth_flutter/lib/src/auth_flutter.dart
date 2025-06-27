@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
-import 'package:tekartik_firebase_auth_flutter/src/google_auth.dart';
+
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart'
     as firebase_flutter;
 
@@ -244,35 +244,7 @@ class AuthFlutterImpl
     AuthProvider authProvider, {
     AuthSignInOptions? options,
   }) async {
-    //devPrint('signIn($authProvider, $options)');
-    if (authProvider is GoogleAuthProvider) {
-      //devPrint('google');
-      var nativeAuthProvider =
-          (authProvider as GoogleAuthProviderImpl).nativeAuthProvider;
-
-      if (options is AuthSignInOptionsWeb) {
-        if (options.isPopup) {
-          //devPrint('popup');
-          var credentials = await nativeAuth.signInWithPopup(
-            nativeAuthProvider,
-          );
-          //devPrint('popup done');
-          return AuthSignInResultFlutter(credentials);
-        } else {
-          //devPrint('redirect');
-          await nativeAuth.signInWithRedirect(nativeAuthProvider);
-          //devPrint('redirect done');
-          throw StateError('Sign in result sent later');
-          //return AuthSignInResultFlutter(credentials);
-        }
-      } else {
-        var credentials = await nativeAuth.signInWithProvider(
-          nativeAuthProvider,
-        );
-        return AuthSignInResultFlutter(credentials);
-      }
-    }
-    throw UnsupportedError('Unsupported provider ${authProvider.providerId}');
+     throw UnsupportedError('Unsupported provider ${authProvider.providerId}');
   }
 
   @override
