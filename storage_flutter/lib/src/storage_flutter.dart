@@ -197,18 +197,12 @@ class BucketFlutter with BucketMixin implements Bucket {
     // items: (file1.txt test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/file1.txt),
     // prefixes (other_sub test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/other_sub)
     // dGVzdC96cTRUaE9QWlN1NFFFSFl4Q3Bsay90ZXN0L2xpc3RfZmlsZXMveWVzL290aGVyX3N1Yi8=
-    var files =
-        nativeResponse.items
-            .map(
-              (nativeReference) => FileFlutter(this, nativeReference.fullPath),
-            )
-            .toList();
-    var prefixes =
-        nativeResponse.prefixes
-            .map(
-              (nativeReference) => FileFlutter(this, nativeReference.fullPath),
-            )
-            .toList();
+    var files = nativeResponse.items
+        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
+        .toList();
+    var prefixes = nativeResponse.prefixes
+        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
+        .toList();
     allPrefixes.addAll(prefixes);
     if (nativeResponse.nextPageToken != null) {
       // devPrint('nextPageToken ${nativeResponse.nextPageToken}');
@@ -334,16 +328,15 @@ class _GetFileOptionsFlutter implements GetFilesOptions {
        _nextPrefix = nextPrefix;
 
   @override
-  String toString() =>
-      {
-        if (maxResults != null) 'maxResults': maxResults,
-        if (prefix != null) 'prefix': prefix,
-        if (_nextPrefix != null) 'nextPrefix': _nextPrefix,
-        if (_nextPrefixes != null) 'nextPrefixes': _nextPrefixes,
-        if (_nextFiles != null) 'nextFiles': _nextFiles,
-        'autoPaginate': autoPaginate,
-        if (pageToken != null) 'pageToken': pageToken,
-      }.toString();
+  String toString() => {
+    if (maxResults != null) 'maxResults': maxResults,
+    if (prefix != null) 'prefix': prefix,
+    if (_nextPrefix != null) 'nextPrefix': _nextPrefix,
+    if (_nextPrefixes != null) 'nextPrefixes': _nextPrefixes,
+    if (_nextFiles != null) 'nextFiles': _nextFiles,
+    'autoPaginate': autoPaginate,
+    if (pageToken != null) 'pageToken': pageToken,
+  }.toString();
 
   // Copy options
 
@@ -363,8 +356,9 @@ class _GetFileOptionsFlutter implements GetFilesOptions {
       prefix: prefix ?? this.prefix,
       autoPaginate: autoPaginate ?? this.autoPaginate,
       nextFiles: nextFiles ?? _nextFiles,
-      pageToken:
-          (nullPageToken ?? false) ? null : (pageToken ?? this.pageToken),
+      pageToken: (nullPageToken ?? false)
+          ? null
+          : (pageToken ?? this.pageToken),
       nextPrefixes: nextPrefixes ?? _nextPrefixes,
       nextPrefix: (nullNextPrefix ?? false) ? null : nextPrefix ?? _nextPrefix,
     );

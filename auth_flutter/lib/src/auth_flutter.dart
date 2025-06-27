@@ -210,8 +210,9 @@ class AuthFlutterImpl
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      final nativeUser =
-          (await nativeAuth.signInWithCredential(credential)).user;
+      final nativeUser = (await nativeAuth.signInWithCredential(
+        credential,
+      )).user;
       return wrapUser(nativeUser);
     } else {
       var userCredentials = await webSignInWithGoogle();

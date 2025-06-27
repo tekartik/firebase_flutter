@@ -14,11 +14,10 @@ class DocumentSnapshotFlutter
   DocumentSnapshotFlutter(this.firestore, this.nativeInstance);
 
   @override
-  Map<String, Object?> get data =>
-      documentDataFromFlutterData(
-        firestore,
-        nativeInstance.data() as Map,
-      ).asMap();
+  Map<String, Object?> get data => documentDataFromFlutterData(
+    firestore,
+    nativeInstance.data() as Map,
+  ).asMap();
 
   @override
   bool get exists => nativeInstance.exists;

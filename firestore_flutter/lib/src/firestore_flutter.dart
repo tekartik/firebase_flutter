@@ -346,12 +346,13 @@ class QueryFlutter
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(
-      handleData: (
-        native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
-        EventSink<QuerySnapshot> sink,
-      ) {
-        sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
-      },
+      handleData:
+          (
+            native.QuerySnapshot<Map<String, Object?>> nativeQuerySnapshot,
+            EventSink<QuerySnapshot> sink,
+          ) {
+            sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
+          },
     );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
@@ -611,22 +612,26 @@ class DocumentReferenceFlutter
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(
-      handleData: (
-        native.DocumentSnapshot<Map<String, Object?>> nativeDocumentSnapshot,
-        EventSink<DocumentSnapshot> sink,
-      ) {
-        // devPrint('$this onSnapshot ${nativeDocumentSnapshot.data()}');
-        try {
-          sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
-        } catch (e) {
-          if (kDebugMode) {
-            print(
-              'onSnapshot.error ${nativeDocumentSnapshot.reference.path}: $e',
-            );
-          }
-          rethrow;
-        }
-      },
+      handleData:
+          (
+            native.DocumentSnapshot<Map<String, Object?>>
+            nativeDocumentSnapshot,
+            EventSink<DocumentSnapshot> sink,
+          ) {
+            // devPrint('$this onSnapshot ${nativeDocumentSnapshot.data()}');
+            try {
+              sink.add(
+                _wrapDocumentSnapshot(firestore, nativeDocumentSnapshot),
+              );
+            } catch (e) {
+              if (kDebugMode) {
+                print(
+                  'onSnapshot.error ${nativeDocumentSnapshot.reference.path}: $e',
+                );
+              }
+              rethrow;
+            }
+          },
     );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
@@ -665,21 +670,14 @@ class QuerySnapshotFlutter implements QuerySnapshot {
   QuerySnapshotFlutter(this.firestore, this.nativeInstance);
 
   @override
-  List<DocumentSnapshot> get docs =>
-      nativeInstance.docs
-          .map(
-            (nativeInstance) =>
-                _wrapDocumentSnapshot(firestore, nativeInstance),
-          )
-          .toList();
+  List<DocumentSnapshot> get docs => nativeInstance.docs
+      .map((nativeInstance) => _wrapDocumentSnapshot(firestore, nativeInstance))
+      .toList();
 
   @override
-  List<DocumentChange> get documentChanges =>
-      nativeInstance.docChanges
-          .map(
-            (nativeInstance) => _wrapDocumentChange(firestore, nativeInstance),
-          )
-          .toList();
+  List<DocumentChange> get documentChanges => nativeInstance.docChanges
+      .map((nativeInstance) => _wrapDocumentChange(firestore, nativeInstance))
+      .toList();
 }
 
 class DocumentChangeFlutter implements DocumentChange {
