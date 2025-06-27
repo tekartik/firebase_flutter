@@ -60,20 +60,18 @@ extension AuthFlutterImplGoogle on Auth {
         print('Google sign in');
       }
     }
-    _googleSignIn ??= google_sign_in.GoogleSignIn();
-    final googleUser = await _googleSignIn!.signIn();
+    _googleSignIn ??= google_sign_in.GoogleSignIn.instance;
+    final googleUser = await _googleSignIn!.authenticate();
     if (_debug) {
       if (kDebugMode) {
         print('Google signed in $googleUser');
       }
     }
-    if (googleUser == null) {
-      throw StateError('Sign-in failed');
-    }
-    final googleAuth = await googleUser.authentication;
-
+    final googleAuth = googleUser.authentication;
+    final authorization = await _googleSignIn!.authorizationClient
+        .authorizeScopes([]);
     credential = native.GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
+      accessToken: authorization.accessToken,
       idToken: googleAuth.idToken,
     );
     final credentials = (await firebaseNativeAuth.signInWithCredential(

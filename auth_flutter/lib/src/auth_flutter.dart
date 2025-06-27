@@ -179,15 +179,14 @@ class AuthFlutterImpl
   /// Google only...
   Future<AuthSignInResult?> nativeGoogleSignIn() async {
     late native.AuthCredential credential;
-    _googleSignIn ??= google_sign_in.GoogleSignIn();
-    final googleUser = await _googleSignIn!.signIn();
-    if (googleUser == null) {
-      return null;
-    }
-    final googleAuth = await googleUser.authentication;
+    _googleSignIn ??= google_sign_in.GoogleSignIn.instance;
+    final googleUser = await _googleSignIn!.authenticate();
 
+    final googleAuth = googleUser.authentication;
+    final authorization = await _googleSignIn!.authorizationClient
+        .authorizeScopes([]);
     credential = native.GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
+      accessToken: authorization.accessToken,
       idToken: googleAuth.idToken,
     );
     final credentials = (await nativeAuth.signInWithCredential(credential));
@@ -199,15 +198,13 @@ class AuthFlutterImpl
   Future<User?> googleSignIn() async {
     if (!kIsWeb) {
       late native.AuthCredential credential;
-      _googleSignIn ??= google_sign_in.GoogleSignIn();
-      final googleUser = await _googleSignIn!.signIn();
-      if (googleUser == null) {
-        return null;
-      }
-      final googleAuth = await googleUser.authentication;
-
+      _googleSignIn ??= google_sign_in.GoogleSignIn.instance;
+      final googleUser = await _googleSignIn!.authenticate();
+      final googleAuth = googleUser.authentication;
+      final authorization = await _googleSignIn!.authorizationClient
+          .authorizeScopes([]);
       credential = native.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+        accessToken: authorization.accessToken,
         idToken: googleAuth.idToken,
       );
       final nativeUser = (await nativeAuth.signInWithCredential(
