@@ -152,6 +152,12 @@ class AuthFlutterImpl
     return UserCredentialFlutter(userCredential);
   }
 
+  @override
+  Future<UserCredential> signInAnonymously() async {
+    var userCredential = await nativeAuth.signInAnonymously();
+    return UserCredentialFlutter(userCredential);
+  }
+
   /// App
   final firebase_flutter.FirebaseAppFlutter appFlutter;
 
