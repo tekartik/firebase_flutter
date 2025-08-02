@@ -5,7 +5,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart'
     show FirebaseAppFlutter;
 import 'package:tekartik_firebase_functions/firebase_functions.dart';
-import 'package:tekartik_firebase_functions_call/functions_call.dart';
+import 'package:tekartik_firebase_functions_call/functions_call_mixin.dart';
 
 /// Firebase functions call service flutter
 final _firebaseFunctionsCallServiceFlutter =
@@ -41,9 +41,9 @@ class FirebaseFunctionsCallServiceFlutter
   @override
   FirebaseFunctionsCallFlutter functionsCall(
     App app, {
-    required String region,
-    Uri? baseUri,
+    required FirebaseFunctionsCallOptions options,
   }) {
+    var region = options.region;
     return _getInstance(app, region, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
