@@ -1,11 +1,12 @@
 import 'package:cloud_functions/cloud_functions.dart' as native;
-import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart'
     show FirebaseAppFlutter;
 import 'package:tekartik_firebase_functions/firebase_functions.dart';
 import 'package:tekartik_firebase_functions_call/functions_call_mixin.dart';
+
+import 'functions_callable_flutter.dart';
 
 /// Firebase functions call service flutter
 final _firebaseFunctionsCallServiceFlutter =
@@ -87,6 +88,7 @@ class FirebaseFunctionsCallFlutter
   }) {
     return FirebaseFunctionsCallableFlutter(
       this,
+      name,
       nativeInstance.httpsCallable(name, options: options?.nativeInstance),
     );
   }
@@ -96,58 +98,6 @@ class FirebaseFunctionsCallFlutter
 
   @override
   FirebaseFunctionsCallService get service => serviceFlutter;
-}
-
-extension on FirebaseFunctionsCallableOptions {
-  native.HttpsCallableOptions get nativeInstance => native.HttpsCallableOptions(
-    timeout: timeout,
-    limitedUseAppCheckToken: limitedUseAppCheckToken,
-  );
-}
-
-/// Firebase functions callable flutter.
-class FirebaseFunctionsCallableFlutter implements FirebaseFunctionsCallable {
-  /// Functions call flutter
-  final FirebaseFunctionsCallFlutter functionsCallFlutter;
-
-  /// Native instance
-  final native.HttpsCallable nativeInstance;
-
-  /// Constructor
-  FirebaseFunctionsCallableFlutter(
-    this.functionsCallFlutter,
-    this.nativeInstance,
-  );
-
-  @override
-  Future<FirebaseFunctionsCallableResultFlutter<T>> call<T>([
-    Object? parameters,
-  ]) async {
-    try {
-      return FirebaseFunctionsCallableResultFlutter(
-        await nativeInstance.call<T>(parameters),
-      );
-    } catch (e) {
-      if (e is native.FirebaseFunctionsException) {
-        throw HttpsErrorFlutter(e);
-      }
-      throw HttpsError(HttpsErrorCode.internal, '$e', e);
-    }
-  }
-}
-
-/// Firebase functions callable result flutter.
-class FirebaseFunctionsCallableResultFlutter<T>
-    with FirebaseFunctionsCallableResultDefaultMixin<T>
-    implements FirebaseFunctionsCallableResult<T> {
-  /// Native instance
-  final native.HttpsCallableResult nativeInstance;
-
-  /// Constructor
-  FirebaseFunctionsCallableResultFlutter(this.nativeInstance);
-
-  @override
-  T get data => nativeInstance.data as T;
 }
 
 /// Errors for https callabacle
