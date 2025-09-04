@@ -93,6 +93,10 @@ class FirestoreFlutter
       _wrapCollectionReference(this, nativeInstance.collection(path));
 
   @override
+  QueryFlutter collectionGroup(String collectionId) =>
+      _wrapQuery(this, nativeInstance.collectionGroup(collectionId));
+
+  @override
   DocumentReference doc(String path) =>
       wrapDocumentReference(this, nativeInstance.doc(path));
 
