@@ -11,5 +11,4 @@ In `pubspec.yaml`:
     git:
       url: https://github.com/tekartik/firebase_flutter
       path: functions_call_flutter
-      ref: dart3a
 ```
