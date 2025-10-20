@@ -2,10 +2,12 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:firebase_storage/firebase_storage.dart' as native;
+import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/src/common/storage_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_storage/storage.dart';
+import 'package:tekartik_firebase_storage/utils/content_type.dart';
 import 'package:tekartik_firebase_storage/utils/link.dart';
 
 import 'import.dart';
@@ -55,6 +57,10 @@ class FileMetadataFlutter with FileMetadataMixin implements FileMetadata {
 
   @override
   int get size => _full.size!;
+
+  /// Content type of the file
+  @override
+  String? get contentType => _full.contentType;
 }
 
 class FileFlutter with FileMixin implements File {
@@ -74,8 +80,22 @@ class FileFlutter with FileMixin implements File {
 
   @override
   Future<void> writeAsBytes(Uint8List bytes) async {
+    await upload(bytes);
+  }
+
+  @override
+  Future<void> upload(
+    Uint8List bytes, {
+    StorageUploadFileOptions? options,
+  }) async {
+    var contentType =
+        options?.contentType ??
+        firebaseStorageContentTypeFromFilename(url.basename(path));
     _ref ??= await _initRef();
-    await _ref!.putData(bytes);
+    await _ref!.putData(
+      bytes,
+      native.SettableMetadata(contentType: contentType),
+    );
   }
 
   // To deprecated
