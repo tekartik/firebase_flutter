@@ -82,8 +82,7 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
       options: options,
       isDefault: isDefault,
     );
-    FirebaseMixin.latestFirebaseInstanceOrNull = app;
-    return app;
+    return FirebaseMixin.addApp(app);
   }
 
   @override
@@ -99,8 +98,7 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
         options: options,
         isDefault: true,
       );
-      FirebaseMixin.latestFirebaseInstanceOrNull = app;
-      return app;
+      return FirebaseMixin.addApp(app);
     } else {
       throw 'not supported, use async method';
     }
@@ -110,12 +108,13 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
   App app({String? name}) {
     if (name == null) {
       var nativeApp = flutter.Firebase.app();
-      return _FirebaseAppFlutter(
+      var app = _FirebaseAppFlutter(
         firebaseFlutter: this,
         nativeInstance: nativeApp,
         options: wrapOptions(nativeApp.options),
         isDefault: true,
       );
+      return FirebaseMixin.addApp(app);
     }
     throw UnsupportedError(
       'Flutter has only a single default app instantiated',
@@ -161,8 +160,8 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   @override
   Future delete() async {
     await closeServices();
-    // delete is not supported, simply ignore
-    // throw 'not supported';
+    FirebaseMixin.removeApp(this);
+    await nativeInstance?.delete();
   }
 
   @override

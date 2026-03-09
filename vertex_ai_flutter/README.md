@@ -10,5 +10,4 @@ In `pubspec.yaml`:
     git:
       url: https://github.com/tekartik/firebase_flutter
       path: vertex_ai_flutter
-      ref: dart3a
 ```

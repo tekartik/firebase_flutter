@@ -15,19 +15,16 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart3a
     version: '>=1.1.6'
   tekartik_firebase_flutter:
     git:
       url: https://github.com/tekartik/firebase_flutter
       path: firebase_flutter
-      ref: dart3a
     version: '>=0.6.0'
   cloud_firestore: '>=5.6.1'
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
-      ref: dart3a
       path: firebase
 
 dev_dependencies:
@@ -37,7 +34,6 @@ dev_dependencies:
   tekartik_lints_flutter:
     git:
       url: https://github.com/tekartik/common_flutter.dart
-      ref: dart3a
       path: packages/lints_flutter
     version: '>=0.1.0'
 resolution: workspace

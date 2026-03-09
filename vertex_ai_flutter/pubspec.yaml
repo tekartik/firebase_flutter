@@ -13,33 +13,27 @@ dependencies:
   tekartik_firebase_vertex_ai:
     git:
       url: https://github.com/tekartik/firebase_vertex_ai.dart
-      ref: dart3a
       path: vertex_ai
   firebase_ai: ">=2.0.0"
   tekartik_firebase_flutter:
     git:
       url: https://github.com/tekartik/firebase_flutter
-      ref: dart3a
       path: firebase_flutter
   tekartik_firebase_auth:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
-      ref: dart3a
       path: auth
   tekartik_firebase_auth_flutter:
     git:
       url: https://github.com/tekartik/firebase_flutter
-      ref: dart3a
       path: auth_flutter
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
-      ref: dart3a
       path: firebase
   tekartik_common_utils:
     git:
       url: https://github.com/tekartik/common_utils.dart
-      ref: dart3a
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -47,7 +41,6 @@ dev_dependencies:
   tekartik_lints_flutter:
     git:
       url: https://github.com/tekartik/common_flutter.dart
-      ref: dart3a
       path: packages/lints_flutter
 
 # For information on the generic Dart part of this file, see the
