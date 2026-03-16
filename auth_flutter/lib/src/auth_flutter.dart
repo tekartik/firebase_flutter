@@ -174,6 +174,11 @@ class AuthFlutterImpl
   }
 
   @override
+  Future<void> sendEmailVerification() async {
+    await nativeAuth.currentUser?.sendEmailVerification();
+  }
+
+  @override
   void dispose() {
     _onAuthStateChangedSubscription?.cancel();
     super.dispose();
