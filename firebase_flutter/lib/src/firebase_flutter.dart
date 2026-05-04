@@ -159,8 +159,7 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
 
   @override
   Future delete() async {
-    await closeServices();
-    FirebaseMixin.removeApp(this);
+    await super.delete();
     await nativeInstance?.delete();
   }
 

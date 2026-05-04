@@ -73,6 +73,9 @@ class FirestoreServiceFlutter
 
   @override
   bool get supportsVectorValue => true;
+
+  @override
+  bool get supportsBlobs => true;
 }
 
 class FirestoreFlutter

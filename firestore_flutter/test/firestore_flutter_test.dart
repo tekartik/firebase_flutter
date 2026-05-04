@@ -8,5 +8,8 @@ void main() {
     test('api', () {
       firestoreServiceFlutter;
     });
+    test('supports', () {
+      expect(firestoreServiceFlutter.supportsBlobs, isTrue);
+    });
   });
 }
