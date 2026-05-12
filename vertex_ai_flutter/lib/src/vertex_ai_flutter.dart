@@ -62,10 +62,8 @@ class _FirebaseVertexAiServiceFlutter
   FirebaseVertexAiFlutter vertexAi(App app) {
     return getInstance(app, () {
       var appFlutter = app as FirebaseAppFlutter;
-      var nativeAuth = authServiceFlutter?.auth(app).nativeInstance;
       var fbVertexAi = fb.FirebaseAI.vertexAI(
         app: appFlutter.nativeInstance!,
-        auth: nativeAuth,
         location: location,
       );
       return _FirebaseVertexAiFlutter(this, appFlutter, fbVertexAi);
@@ -84,11 +82,7 @@ class _FirebaseGeminiAiServiceFlutter
   FirebaseVertexAiFlutter vertexAi(App app) {
     return getInstance(app, () {
       var appFlutter = app as FirebaseAppFlutter;
-      var nativeAuth = authServiceFlutter?.auth(app).nativeInstance;
-      var fbVertexAi = fb.FirebaseAI.googleAI(
-        app: appFlutter.nativeInstance!,
-        auth: nativeAuth,
-      );
+      var fbVertexAi = fb.FirebaseAI.googleAI(app: appFlutter.nativeInstance!);
       return _FirebaseVertexAiFlutter(this, appFlutter, fbVertexAi);
     });
   }
