@@ -340,12 +340,10 @@ class _GetFileOptionsFlutter implements GetFilesOptions {
     this.prefix,
     this.pageToken,
     this.autoPaginate = true,
-    List<FileFlutter>? nextPrefixes,
-    String? nextPrefix,
-    List<FileFlutter>? nextFiles,
-  }) : _nextFiles = nextFiles,
-       _nextPrefixes = nextPrefixes,
-       _nextPrefix = nextPrefix;
+    this._nextPrefixes,
+    this._nextPrefix,
+    this._nextFiles,
+  });
 
   @override
   String toString() => {
