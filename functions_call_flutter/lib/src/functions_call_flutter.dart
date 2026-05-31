@@ -63,7 +63,9 @@ class FirebaseFunctionsCallServiceFlutter
 
 /// Firebase functions call flutter
 class FirebaseFunctionsCallFlutter
-    with FirebaseAppProductMixin<FirebaseFunctionsCall>
+    with
+        FirebaseAppProductMixin<FirebaseFunctionsCall>,
+        FirebaseFunctionsCallDefaultMixin
     implements FirebaseFunctionsCall {
   /// App flutter
   final FirebaseAppFlutter appFlutter;
@@ -90,6 +92,21 @@ class FirebaseFunctionsCallFlutter
       this,
       name,
       nativeInstance.httpsCallable(name, options: options?.nativeInstance),
+    );
+  }
+
+  @override
+  FirebaseFunctionsCallableFlutter callableFromUri(
+    Uri uri, {
+    FirebaseFunctionsCallableOptions? options,
+  }) {
+    return FirebaseFunctionsCallableFlutter(
+      this,
+      uri.toString(),
+      nativeInstance.httpsCallableFromUri(
+        uri,
+        options: options?.nativeInstance,
+      ),
     );
   }
 
