@@ -3,6 +3,8 @@ import 'package:tekartik_firebase_firestore_flutter/src/firestore_flutter.dart'
     as firestore_flutter;
 
 export 'package:tekartik_firebase_firestore/firestore.dart';
+export 'package:tekartik_firebase_firestore_flutter/src/firestore_flutter.dart'
+    show FirestoreFlutter, FirestoreFlutterExt;
 
 FirestoreService get firestoreServiceFlutter =>
     firestore_flutter.firestoreService;

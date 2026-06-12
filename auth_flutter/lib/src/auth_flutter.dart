@@ -14,7 +14,7 @@ import 'import.dart';
 /// Flutter impl
 class AuthServiceFlutterImpl
     with common.FirebaseProductServiceMixin<FirebaseAuth>, AuthServiceMixin
-    implements AuthServiceFlutter {
+    implements FirebaseAuthServiceFlutter {
   @override
   FirebaseAuthFlutter auth(common.App app) {
     return getInstance(app, () {
@@ -130,6 +130,18 @@ class AuthFlutterImpl
   final native.FirebaseAuth nativeAuth;
 
   StreamSubscription? _onAuthStateChangedSubscription;
+
+  /// Use emulator
+  Future<void> nativeUseEmulator(String host, int port) {
+    /*
+    nativeAuth.settings = const Settings(
+      host: 'localhost:8080',
+      sslEnabled: false,
+      persistenceEnabled: false,
+    );*/
+
+    return nativeAuth.useAuthEmulator(host, port, automaticHostMapping: true);
+  }
 
   void _listenToCurrentUser() {
     _onAuthStateChangedSubscription?.cancel();
@@ -254,6 +266,23 @@ extension FirebaseAuthFlutterExtension on Auth {
     }
   }
 
+  AuthFlutterImpl get _impl => (this as AuthFlutterImpl);
+
+  /// Use firestore emulator
+  Future<void> useFirestoreEmulator(String host, int port) {
+    return _impl.nativeUseEmulator(host, port);
+  }
+
   /// Auth flutter
   AuthFlutter get flutter => this as AuthFlutter;
+}
+
+/// Helpers
+extension FirebaseAuthFlutterImplExtension on FirebaseAuthFlutter {
+  AuthFlutterImpl get _impl => (this as AuthFlutterImpl);
+
+  /// Use firestore emulator
+  Future<void> useAuthEmulator(String host, int port) {
+    return _impl.useFirestoreEmulator(host, port);
+  }
 }

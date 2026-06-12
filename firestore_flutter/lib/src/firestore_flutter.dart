@@ -82,7 +82,7 @@ abstract class FirestoreFlutter implements Firestore {}
 
 class FirestoreFlutterImpl
     with FirebaseAppProductMixin<Firestore>, FirestoreDefaultMixin
-    implements Firestore {
+    implements FirestoreFlutter {
   @override
   final FirestoreServiceFlutter service;
   final native.FirebaseFirestore nativeInstance;
@@ -90,8 +90,13 @@ class FirestoreFlutterImpl
   final FirebaseAppFlutter appFlutter;
   FirestoreFlutterImpl(this.service, this.appFlutter, this.nativeInstance);
 
-  Future<void> nativeUseAuth(String host, int port) async {
-    nativeInstance.useFirestoreEmulator(host, port);
+  Future<void> nativeUseFirestoreEmulator(String host, int port) async {
+    nativeInstance.settings = native.Settings(
+      host: '$host:$port',
+      sslEnabled: false,
+      persistenceEnabled: false,
+    );
+    nativeInstance.useFirestoreEmulator(host, port, automaticHostMapping: true);
   }
 
   @override
@@ -711,4 +716,11 @@ class DocumentChangeFlutter implements DocumentChange {
 
   @override
   DocumentChangeType get type => _wrapDocumentChangeType(nativeInstance.type)!;
+}
+
+extension FirestoreFlutterExt on FirestoreFlutter {
+  FirestoreFlutterImpl get _impl => (this as FirestoreFlutterImpl);
+  Future<void> useFirestoreEmulator(String host, int port) {
+    return _impl.nativeUseFirestoreEmulator(host, port);
+  }
 }
