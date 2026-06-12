@@ -24,18 +24,18 @@ class FirestoreServiceFlutter
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
   @override
-  FirestoreFlutter firestore(App app) {
+  FirestoreFlutterImpl firestore(App app) {
     return getInstance(app, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
       if (appFlutter.isDefault!) {
-        return FirestoreFlutter(
+        return FirestoreFlutterImpl(
           this,
           appFlutter,
           native.FirebaseFirestore.instance,
         );
       } else {
-        return FirestoreFlutter(
+        return FirestoreFlutterImpl(
           this,
           appFlutter,
           native.FirebaseFirestore.instanceFor(app: appFlutter.nativeInstance!),
@@ -78,7 +78,9 @@ class FirestoreServiceFlutter
   bool get supportsBlobs => true;
 }
 
-class FirestoreFlutter
+abstract class FirestoreFlutter implements Firestore {}
+
+class FirestoreFlutterImpl
     with FirebaseAppProductMixin<Firestore>, FirestoreDefaultMixin
     implements Firestore {
   @override
@@ -86,7 +88,11 @@ class FirestoreFlutter
   final native.FirebaseFirestore nativeInstance;
 
   final FirebaseAppFlutter appFlutter;
-  FirestoreFlutter(this.service, this.appFlutter, this.nativeInstance);
+  FirestoreFlutterImpl(this.service, this.appFlutter, this.nativeInstance);
+
+  Future<void> nativeUseAuth(String host, int port) async {
+    nativeInstance.useFirestoreEmulator(host, port);
+  }
 
   @override
   WriteBatch batch() => WriteBatchFlutter(nativeInstance.batch());
