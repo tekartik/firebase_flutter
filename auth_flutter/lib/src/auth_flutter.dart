@@ -141,6 +141,18 @@ class AuthFlutterImpl
   }
 
   @override
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    var userCredential = await nativeAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return UserCredentialFlutter(userCredential);
+  }
+
+  @override
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
