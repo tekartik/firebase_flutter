@@ -80,7 +80,9 @@ class UserCredentialFlutter implements UserCredential {
   String toString() => 'UserCredentialFlutter($user)';
 }
 
-class _UserFlutterImpl implements User, UserInfoWithIdToken {
+class _UserFlutterImpl
+    with FirebaseUserMixin
+    implements User, UserInfoWithIdToken {
   final native.User nativeInstance;
 
   _UserFlutterImpl(this.nativeInstance);
@@ -116,6 +118,11 @@ class _UserFlutterImpl implements User, UserInfoWithIdToken {
   @override
   Future<String> getIdToken({bool? forceRefresh}) async =>
       (await nativeInstance.getIdToken(forceRefresh ?? false))!;
+
+  @override
+  common.Future<void> delete() async {
+    await nativeInstance.delete();
+  }
 }
 
 /// Flutter impl
