@@ -28,6 +28,7 @@ class FirebaseFunctionsCallServiceFlutter
   FirebaseFunctionsCallFlutter _getInstance(
     App app,
     String region,
+
     FirebaseFunctionsCallFlutter Function() createIfNotFound,
   ) {
     var key = '${app.name}_$region';

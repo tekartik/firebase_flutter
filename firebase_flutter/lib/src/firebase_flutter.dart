@@ -7,6 +7,7 @@ import 'package:tekartik_firebase/src/firebase_mixin.dart';
 
 /// Compat to deprecate
 @Deprecated('To deprecated since 2024-03-20')
+/// Typedef representing [AppFlutter].
 typedef AppFlutter = FirebaseAppFlutter;
 
 class _FirebaseAppOptionsFlutter with FirebaseAppOptionsMixin {

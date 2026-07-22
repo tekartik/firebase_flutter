@@ -20,7 +20,6 @@ abstract class FirebaseAiServiceFlutter implements FirebaseVertexAiService {}
 abstract class FirebaseVertexAiServiceFlutter
     implements FirebaseAiServiceFlutter {
   /// Optionnal auth service
-  ///
   factory FirebaseVertexAiServiceFlutter({
     FirebaseAuthService? authService,
     String? location,
@@ -40,7 +39,6 @@ abstract class FirebaseVertexAiServiceFlutter
 abstract class FirebaseGeminiAiServiceFlutter
     implements FirebaseAiServiceFlutter {
   /// Optionnal auth service
-  ///
   factory FirebaseGeminiAiServiceFlutter({FirebaseAuthService? authService}) {
     assert(
       authService is FirebaseAuthServiceFlutter?,
@@ -114,6 +112,7 @@ class _FirebaseVertexAiFlutter
       model: model,
       generationConfig: generationConfig?.toFbGenerationConfig(),
     );
+
     return VaiGenerativeModelFlutter(this, nativeModel);
   }
 }

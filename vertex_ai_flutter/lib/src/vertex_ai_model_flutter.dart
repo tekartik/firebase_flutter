@@ -46,6 +46,7 @@ class VaiGenerativeModelFlutter implements VaiGenerativeModel {
     var nativeResponse = await nativeInstance.generateContent(
       prompt.toNative(),
     );
+
     return VaiGenerateContentResponseFlutter(nativeResponse);
   }
 }

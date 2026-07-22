@@ -56,6 +56,7 @@ class _FirebaseFunctionsCallableFlutter
       if (e is native.FirebaseFunctionsException) {
         throw HttpsErrorFlutter(e);
       }
+
       throw HttpsError(HttpsErrorCode.internal, '$e', e);
     }
   }

@@ -168,6 +168,7 @@ class AuthFlutterImpl
       email: email,
       password: password,
     );
+
     return UserCredentialFlutter(userCredential);
   }
 
@@ -180,12 +181,14 @@ class AuthFlutterImpl
       email: email,
       password: password,
     );
+
     return UserCredentialFlutter(userCredential);
   }
 
   @override
   Future<UserCredential> signInAnonymously() async {
     var userCredential = await nativeAuth.signInAnonymously();
+
     return UserCredentialFlutter(userCredential);
   }
 
@@ -201,6 +204,7 @@ class AuthFlutterImpl
   Future<User?> reloadCurrentUser() async {
     await (nativeAuth.currentUser)?.reload();
     _listenToCurrentUser();
+
     return wrapUser((nativeAuth.currentUser));
   }
 
