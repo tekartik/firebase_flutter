@@ -60,7 +60,7 @@ class _FirebaseVertexAiServiceFlutter
   FirebaseVertexAiFlutter vertexAi(App app) {
     return getInstance(app, () {
       var appFlutter = app as FirebaseAppFlutter;
-      var fbVertexAi = fb.FirebaseAI.vertexAI(
+      var fbVertexAi = fb.FirebaseAI.agentPlatform(
         app: appFlutter.nativeInstance!,
         location: location,
       );
