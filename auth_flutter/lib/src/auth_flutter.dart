@@ -214,6 +214,11 @@ class AuthFlutterImpl
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await nativeAuth.sendPasswordResetEmail(email: email);
+  }
+
+  @override
   void dispose() {
     _onAuthStateChangedSubscription?.cancel();
     super.dispose();
