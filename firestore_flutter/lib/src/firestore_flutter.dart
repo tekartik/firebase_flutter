@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
+import 'package:tekartik_firebase_firestore/firestore_mixin.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 
 import 'aggregate_query_flutter.dart';
@@ -320,23 +321,28 @@ DocumentData documentDataFromFlutterData(Firestore firestore, Map nativeMap) {
 
 QueryFlutter _wrapQuery(
   Firestore firestore,
-  native.Query<Map<String, Object?>> nativeInstance,
-) => QueryFlutter(firestore, nativeInstance);
+  native.Query<Map<String, Object?>> nativeInstance, {
+  QueryInfo? queryInfo,
+}) => QueryFlutter(firestore, nativeInstance, queryInfo);
 
 class QueryFlutter
     with QueryDefaultMixin, FirestoreQueryExecutorMixin
-    implements Query {
+    implements Query, HasQueryInfo {
   @override
   final Firestore firestore;
   final native.Query<Map<String, Object?>> nativeInstance;
+  @override
+  final QueryInfo? queryInfo;
 
-  QueryFlutter(this.firestore, this.nativeInstance);
+  QueryFlutter(this.firestore, this.nativeInstance, [this.queryInfo]);
 
   @override
   Query endAt({DocumentSnapshot? snapshot, List? values}) {
     return _wrapQuery(
       firestore,
       nativeInstance.endAt(toNativeValue(values) as List),
+      queryInfo: (queryInfo?.clone() ?? QueryInfo())
+        ..endAt(snapshot: snapshot, values: values),
     );
   }
 
@@ -345,6 +351,8 @@ class QueryFlutter
     return _wrapQuery(
       firestore,
       nativeInstance.endBefore(toNativeValue(values) as List),
+      queryInfo: (queryInfo?.clone() ?? QueryInfo())
+        ..endBefore(snapshot: snapshot, values: values),
     );
   }
 
@@ -358,7 +366,11 @@ class QueryFlutter
 
   @override
   Query limit(int limit) {
-    return _wrapQuery(firestore, nativeInstance.limit(limit));
+    return _wrapQuery(
+      firestore,
+      nativeInstance.limit(limit),
+      queryInfo: (queryInfo?.clone() ?? QueryInfo())..limit = limit,
+    );
   }
 
   @override
@@ -379,55 +391,73 @@ class QueryFlutter
 
   @override
   Query orderBy(String key, {bool? descending}) {
+    var desc = descending ?? false;
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
+      ..orderBys.add(OrderByInfo(fieldPath: key, ascending: !desc));
     return _wrapQuery(
       firestore,
-      nativeInstance.orderBy(key, descending: descending == true),
+      nativeInstance.orderBy(key, descending: desc),
+      queryInfo: newQueryInfo,
     );
   }
 
   @override
   Query orderById({bool? descending}) {
+    var desc = descending ?? false;
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
+      ..orderBys.add(
+        OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: !desc),
+      );
     return _wrapQuery(
       firestore,
-      nativeInstance.orderBy(
-        native.FieldPath.documentId,
-        descending: descending == true,
-      ),
+      nativeInstance.orderBy(native.FieldPath.documentId, descending: desc),
+      queryInfo: newQueryInfo,
     );
   }
 
   @override
   Query select(List<String> keyPaths) {
-    // not supported
-    return this;
+    return _wrapQuery(
+      firestore,
+      nativeInstance,
+      queryInfo: (queryInfo?.clone() ?? QueryInfo())..selectKeyPaths = keyPaths,
+    );
   }
 
   @override
   Query startAfter({DocumentSnapshot? snapshot, List? values}) {
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
+      ..startAfter(snapshot: snapshot, values: values);
     if (snapshot != null) {
       return _wrapQuery(
         firestore,
         nativeInstance.startAfterDocument(snapshot.flutter.nativeInstance),
+        queryInfo: newQueryInfo,
       );
     } else {
       return _wrapQuery(
         firestore,
         nativeInstance.startAfter(toNativeValue(values) as List),
+        queryInfo: newQueryInfo,
       );
     }
   }
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List? values}) {
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
+      ..startAt(snapshot: snapshot, values: values);
     if (snapshot != null) {
       return _wrapQuery(
         firestore,
         nativeInstance.startAtDocument(snapshot.flutter.nativeInstance),
+        queryInfo: newQueryInfo,
       );
     } else {
       return _wrapQuery(
         firestore,
         nativeInstance.startAt(toNativeValue(values) as List),
+        queryInfo: newQueryInfo,
       );
     }
   }
@@ -445,48 +475,81 @@ class QueryFlutter
     List<Object?>? whereIn,
     bool? isNull,
   }) {
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo());
     if (isEqualTo != notSetQueryParam) {
+      newQueryInfo.addWhere(WhereInfo(fieldPath, isEqualTo: isEqualTo));
       return _wrapQuery(
         firestore,
         nativeInstance.where(fieldPath, isEqualTo: toNativeValue(isEqualTo)),
+        queryInfo: newQueryInfo,
       );
     } else if (isLessThan != notSetQueryParam) {
+      newQueryInfo.addWhere(WhereInfo(fieldPath, isLessThan: isLessThan));
       return _wrapQuery(
         firestore,
         nativeInstance.where(fieldPath, isLessThan: toNativeValue(isLessThan)),
+        queryInfo: newQueryInfo,
       );
     } else if (isLessThanOrEqualTo != notSetQueryParam) {
+      newQueryInfo.addWhere(
+        WhereInfo(fieldPath, isLessThanOrEqualTo: isLessThanOrEqualTo),
+      );
       return _wrapQuery(
         firestore,
         nativeInstance.where(
           fieldPath,
           isLessThanOrEqualTo: toNativeValue(isLessThanOrEqualTo),
         ),
+        queryInfo: newQueryInfo,
       );
     } else if (isGreaterThan != notSetQueryParam) {
+      newQueryInfo.addWhere(WhereInfo(fieldPath, isGreaterThan: isGreaterThan));
       return _wrapQuery(
         firestore,
         nativeInstance.where(
           fieldPath,
           isGreaterThan: toNativeValue(isGreaterThan),
         ),
+        queryInfo: newQueryInfo,
       );
     } else if (isGreaterThanOrEqualTo != notSetQueryParam) {
+      newQueryInfo.addWhere(
+        WhereInfo(fieldPath, isGreaterThanOrEqualTo: isGreaterThanOrEqualTo),
+      );
       return _wrapQuery(
         firestore,
         nativeInstance.where(
           fieldPath,
           isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo),
         ),
+        queryInfo: newQueryInfo,
       );
     } else if (arrayContains != notSetQueryParam) {
+      newQueryInfo.addWhere(WhereInfo(fieldPath, arrayContains: arrayContains));
       return _wrapQuery(
         firestore,
         nativeInstance.where(
           fieldPath,
           arrayContains: toNativeValue(arrayContains),
         ),
+        queryInfo: newQueryInfo,
       );
+    }
+    if (arrayContainsAny != null) {
+      newQueryInfo.addWhere(
+        WhereInfo(
+          fieldPath,
+          arrayContainsAny: arrayContainsAny.whereType<Object>().toList(),
+        ),
+      );
+    }
+    if (whereIn != null) {
+      newQueryInfo.addWhere(
+        WhereInfo(fieldPath, whereIn: whereIn.whereType<Object>().toList()),
+      );
+    }
+    if (isNull != null) {
+      newQueryInfo.addWhere(WhereInfo(fieldPath, isNull: isNull));
     }
     return _wrapQuery(
       firestore,
@@ -496,6 +559,7 @@ class QueryFlutter
         whereIn: toNativeValues(whereIn),
         isNull: isNull,
       ),
+      queryInfo: newQueryInfo,
     );
   }
 
