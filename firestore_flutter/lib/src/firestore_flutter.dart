@@ -580,8 +580,10 @@ mixin PathReferenceFlutterMixin {
       (other is PathReferenceFlutterMixin) && path == other.path;
 }
 
+/// cloud_firestore cannot list missing documents, listDocuments is based on
+/// get.
 class CollectionReferenceFlutter extends QueryFlutter
-    with PathReferenceFlutterMixin
+    with PathReferenceFlutterMixin, CollectionReferenceDefaultMixin
     implements CollectionReference {
   CollectionReferenceFlutter(
     super.firestore,
