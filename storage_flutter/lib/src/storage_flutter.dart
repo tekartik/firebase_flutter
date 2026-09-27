@@ -61,6 +61,10 @@ class FileMetadataFlutter with FileMetadataMixin implements FileMetadata {
   /// Content type of the file
   @override
   String? get contentType => _full.contentType;
+
+  /// Cache control of the file
+  @override
+  String? get cacheControl => _full.cacheControl;
 }
 
 class FileFlutter with FileMixin implements File {
@@ -94,7 +98,10 @@ class FileFlutter with FileMixin implements File {
     _ref ??= await _initRef();
     await _ref!.putData(
       bytes,
-      native.SettableMetadata(contentType: contentType),
+      native.SettableMetadata(
+        contentType: contentType,
+        cacheControl: options?.cacheControl,
+      ),
     );
   }
 
