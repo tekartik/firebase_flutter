@@ -67,6 +67,9 @@ class FirestoreServiceFlutter
   bool get supportsFieldValueArray => true;
 
   @override
+  bool get supportsFieldValueIncrement => true;
+
+  @override
   bool get supportsTrackChanges => true;
 
   @override
@@ -254,6 +257,8 @@ dynamic toNativeValue(Object? value) {
       return native.FieldValue.arrayUnion(value.data as List);
     } else if (value.type == FieldValueType.arrayRemove) {
       return native.FieldValue.arrayRemove(value.data as List);
+    } else if (value is FieldValueIncrement) {
+      return native.FieldValue.increment(value.data);
     }
   } else if (value is DocumentReferenceFlutter) {
     return value.nativeInstance;

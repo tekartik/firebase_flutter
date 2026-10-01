@@ -61,6 +61,7 @@ to the native FlutterFire plugin.
 * Feature flags of `firestoreServiceFlutter` (check them in shared code with
   `firestore.service.supportsXxx`): `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsFieldValueArray`,
+  `supportsFieldValueIncrement`,
   `supportsAggregateQueries`, `supportsVectorValue`, `supportsBlobs` and
   `supportsTrackChanges` are `true`; `supportsQuerySelect`,
   `supportsDocumentSnapshotTime` and `supportsQuerySnapshotCursor` are `false`.
