@@ -22,19 +22,12 @@ class StorageServiceFlutter
     return getInstance(app, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
-      if (appFlutter.isDefault!) {
-        return StorageFlutter(
-          this,
-          appFlutter,
-          native.FirebaseStorage.instance,
-        );
-      } else {
-        return StorageFlutter(
-          this,
-          appFlutter,
-          native.FirebaseStorage.instanceFor(app: appFlutter.nativeInstance),
-        );
-      }
+      // The default instance for the default app.
+      return StorageFlutter(
+        this,
+        appFlutter,
+        native.FirebaseStorage.instanceFor(app: appFlutter.nativeInstance),
+      );
     });
   }
 }
@@ -115,6 +108,12 @@ class FileFlutter with FileMixin implements File {
       data = Uint8List.fromList(content);
     } else if (content is String) {
       data = Uint8List.fromList(utf8.encode(content));
+    } else {
+      throw ArgumentError.value(
+        content,
+        'content',
+        'Uint8List, List<int> or String expected',
+      );
     }
     return writeAsBytes(data);
   }
@@ -123,7 +122,12 @@ class FileFlutter with FileMixin implements File {
   Future<Uint8List> readAsBytes() async {
     _ref ??= await _initRef();
     var metaData = await _ref!.getMetadata();
-    return (await _ref!.getData(metaData.size!))!;
+    var size = metaData.size!;
+    // getData asserts a positive max size.
+    if (size == 0) {
+      return Uint8List(0);
+    }
+    return (await _ref!.getData(size))!;
   }
 
   @override
@@ -136,6 +140,7 @@ class FileFlutter with FileMixin implements File {
   /// Get file meta data
   @override
   Future<FileMetadata> getMetadata() async {
+    _ref ??= await _initRef();
     var fullMetadata = await _ref!.getMetadata();
     return FileMetadataFlutter(fullMetadata);
   }
@@ -191,73 +196,98 @@ class BucketFlutter with BucketMixin implements Bucket {
     return ref;
   }
 
-  Future<GetFilesResponse> _getNextFiles(
-    _GetFileOptionsFlutter optionsFlutter,
-  ) async {
-    var maxResultsDefault = optionsFlutter.maxResults ?? 100;
-
-    var allFiles = optionsFlutter._nextFiles?.toList() ?? <FileFlutter>[];
-    var allPrefixes = optionsFlutter._nextPrefixes?.toList() ?? <FileFlutter>[];
-
-    if (allFiles.isNotEmpty) {
-      var taken = min(allFiles.length, maxResultsDefault);
-      var files = allFiles.sublist(0, taken);
-
-      // devPrint('getFiles nextFiles: ${allFiles.map((file) => file.path)}');
-      var nextQuery = optionsFlutter._copyWith(
-        maxResults: maxResultsDefault - taken,
-        nextFiles: allFiles.sublist(taken),
-      );
-      return GetFilesResponse(files: files, nextQuery: nextQuery);
+  /// The files of [options] whose name starts with its prefix (a plain
+  /// string prefix, like Cloud Storage and storage_fs): the deepest folder
+  /// the prefix names is listed recursively, only the sub folders that can
+  /// hold matching files are listed. One native list call per folder page.
+  ///
+  /// With autoPaginate (the default), every page is fetched and maxResults
+  /// caps the total; otherwise one page of maxResults files is returned with
+  /// the query of the next ones.
+  Future<GetFilesResponse> _getNextFiles(_GetFileOptionsFlutter options) async {
+    var prefix = options.prefix ?? '';
+    if (prefix.startsWith('/')) {
+      prefix = prefix.substring(1);
     }
-    var listOptions = native.ListOptions(
-      maxResults: optionsFlutter.maxResults,
-      pageToken: optionsFlutter.pageToken,
+    var maxResults = options.maxResults;
+    var autoPaginate = options.autoPaginate;
+    var files = <FileFlutter>[];
+    var buffer = options._nextFiles?.toList() ?? <FileFlutter>[];
+    List<FileFlutter> folders;
+    String? folder;
+    String? pageToken;
+    if (options._nextPrefixes == null) {
+      // First call: the deepest folder named by the prefix.
+      var lastSlashIndex = prefix.lastIndexOf('/');
+      folder = lastSlashIndex < 0 ? '' : prefix.substring(0, lastSlashIndex);
+      pageToken = options.pageToken;
+      folders = <FileFlutter>[];
+    } else {
+      folders = options._nextPrefixes.toList();
+      folder = options._nextPrefix;
+      pageToken = folder == null ? null : options.pageToken;
+    }
+
+    /// True if [folderPath] can hold a file starting with [prefix].
+    bool mayHoldMatches(String folderPath) {
+      var folderPrefix = '$folderPath/';
+      return folderPrefix.startsWith(prefix) || prefix.startsWith(folderPrefix);
+    }
+
+    var pageSize = min(maxResults ?? 1000, 1000);
+    while (true) {
+      while (buffer.isNotEmpty &&
+          (maxResults == null || files.length < maxResults)) {
+        files.add(buffer.removeAt(0));
+      }
+      if (maxResults != null && files.length >= maxResults) {
+        break;
+      }
+      if (folder == null) {
+        if (folders.isEmpty) {
+          break;
+        }
+        folder = folders.removeAt(0).path;
+        pageToken = null;
+      }
+      var ref = await getReferenceFromName(folder);
+      var nativeResponse = await ref.list(
+        native.ListOptions(maxResults: pageSize, pageToken: pageToken),
+      );
+      for (var item in nativeResponse.items) {
+        if (item.fullPath.startsWith(prefix)) {
+          buffer.add(FileFlutter(this, item.fullPath));
+        }
+      }
+      for (var subFolder in nativeResponse.prefixes) {
+        if (mayHoldMatches(subFolder.fullPath)) {
+          folders.add(FileFlutter(this, subFolder.fullPath));
+        }
+      }
+      pageToken = nativeResponse.nextPageToken;
+      if (pageToken == null) {
+        folder = null;
+      }
+    }
+    var hasMore = buffer.isNotEmpty || folder != null || folders.isNotEmpty;
+    if (autoPaginate || !hasMore) {
+      return GetFilesResponse(files: files, nextQuery: null);
+    }
+    var nextQuery = options._copyWith(
+      nextFiles: buffer,
+      nextPrefixes: folders,
+      nextPrefix: folder,
+      nullNextPrefix: folder == null,
+      pageToken: pageToken,
+      nullPageToken: pageToken == null,
     );
-
-    var queryPrefix = optionsFlutter._nextPrefix ?? optionsFlutter.prefix ?? '';
-    var ref = await getReferenceFromName(queryPrefix);
-    // devPrint('options: $options, ref: ${ref.bucket}//${ref.fullPath}');
-    var nativeResponse = await ref.list(listOptions);
-    // devPrint(          'nativeResponse items: ${nativeResponse.items.map((ref) => '${ref.bucket} ${ref.fullPath}')}, prefixes ${nativeResponse.prefixes.map((ref) => '${ref.name} ${ref.fullPath}')} ${nativeResponse.nextPageToken}');
-    // nativeResponse
-    // items: (file1.txt test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/file1.txt),
-    // prefixes (other_sub test/zq4ThOPZSu4QEHYxCplk/test/list_files/yes/other_sub)
-    // dGVzdC96cTRUaE9QWlN1NFFFSFl4Q3Bsay90ZXN0L2xpc3RfZmlsZXMveWVzL290aGVyX3N1Yi8=
-    var files = nativeResponse.items
-        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
-        .toList();
-    var prefixes = nativeResponse.prefixes
-        .map((nativeReference) => FileFlutter(this, nativeReference.fullPath))
-        .toList();
-    allPrefixes.addAll(prefixes);
-    if (nativeResponse.nextPageToken != null) {
-      // devPrint('nextPageToken ${nativeResponse.nextPageToken}');
-      var nextQuery = optionsFlutter._copyWith(
-        pageToken: nativeResponse.nextPageToken,
-        nextPrefixes: allPrefixes,
-      );
-      return GetFilesResponse(files: files, nextQuery: nextQuery);
-    }
-    if (allPrefixes.isNotEmpty) {
-      var prefix = allPrefixes.removeAt(0);
-      var nextQuery = optionsFlutter._copyWith(
-        nextPrefix: prefix.path,
-        nextPrefixes: allPrefixes,
-        nullPageToken: true,
-      );
-      return GetFilesResponse(files: files, nextQuery: nextQuery);
-    }
-    return GetFilesResponse(files: files, nextQuery: null);
+    return GetFilesResponse(files: files, nextQuery: nextQuery);
   }
 
   @override
-  Future<GetFilesResponse> getFiles([GetFilesOptions? options]) async {
+  Future<GetFilesResponse> getFiles([GetFilesOptions? options]) {
     var optionsFlutter = options?.asOrToFlutter() ?? _GetFileOptionsFlutter();
-
-    while (true) {
-      return _getNextFiles(optionsFlutter);
-    }
+    return _getNextFiles(optionsFlutter);
   }
 
   @override

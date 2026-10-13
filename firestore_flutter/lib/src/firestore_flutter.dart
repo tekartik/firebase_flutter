@@ -14,6 +14,44 @@ import 'import_firestore.dart';
 @internal
 const notSetQueryParam = Object();
 
+/// A plugin error as a [FirestoreException], still a plugin
+/// [native.FirebaseException] for the catches written for cloud_firestore.
+class _FirestoreExceptionFlutter extends FirestoreException
+    implements native.FirebaseException {
+  final native.FirebaseException nativeException;
+
+  _FirestoreExceptionFlutter(this.nativeException)
+    : super(
+        nativeException.code,
+        nativeException.message ?? nativeException.code,
+        details: nativeException,
+      );
+
+  @override
+  String get plugin => nativeException.plugin;
+
+  @override
+  StackTrace? get stackTrace => nativeException.stackTrace;
+
+  @override
+  String toString() => 'FirestoreExceptionFlutter($nativeException)';
+}
+
+/// [error] as a [FirestoreException] if it is a plugin error.
+Object _firestoreError(Object error) =>
+    error is native.FirebaseException && error is! FirestoreException
+    ? _FirestoreExceptionFlutter(error)
+    : error;
+
+/// Runs [action], its plugin errors thrown as [FirestoreException].
+Future<T> _wrapErrors<T>(Future<T> Function() action) async {
+  try {
+    return await action();
+  } catch (e, st) {
+    Error.throwWithStackTrace(_firestoreError(e), st);
+  }
+}
+
 FirestoreServiceFlutter? _firestoreServiceFlutter;
 
 FirestoreService get firestoreService => firestoreServiceFlutter;
@@ -29,19 +67,12 @@ class FirestoreServiceFlutter
     return getInstance(app, () {
       assert(app is FirebaseAppFlutter, 'invalid firebase app type');
       var appFlutter = app as FirebaseAppFlutter;
-      if (appFlutter.isDefault!) {
-        return FirestoreFlutterImpl(
-          this,
-          appFlutter,
-          native.FirebaseFirestore.instance,
-        );
-      } else {
-        return FirestoreFlutterImpl(
-          this,
-          appFlutter,
-          native.FirebaseFirestore.instanceFor(app: appFlutter.nativeInstance!),
-        );
-      }
+      // The default instance for the default app.
+      return FirestoreFlutterImpl(
+        this,
+        appFlutter,
+        native.FirebaseFirestore.instanceFor(app: appFlutter.nativeInstance!),
+      );
     });
   }
 
@@ -59,9 +90,9 @@ class FirestoreServiceFlutter
   @override
   bool get supportsTimestamps => true;
 
-  // Native implementation does not allow passing snapshots
+  // start/end At/After/Before a document snapshot.
   @override
-  bool get supportsQuerySnapshotCursor => false;
+  bool get supportsQuerySnapshotCursor => true;
 
   @override
   bool get supportsFieldValueArray => true;
@@ -122,10 +153,12 @@ class FirestoreFlutterImpl
   Future<T> runTransaction<T>(
     FutureOr<T> Function(Transaction transaction) updateFunction,
   ) {
-    return nativeInstance.runTransaction((nativeTransaction) async {
-      var transaction = TransactionFlutter(this, nativeTransaction);
-      return await updateFunction(transaction);
-    });
+    return _wrapErrors(
+      () => nativeInstance.runTransaction((nativeTransaction) async {
+        var transaction = TransactionFlutter(this, nativeTransaction);
+        return await updateFunction(transaction);
+      }),
+    );
   }
 
   @override
@@ -155,11 +188,12 @@ class TransactionFlutter implements Transaction {
   }
 
   @override
-  Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
-      _wrapDocumentSnapshot(
-        firestore,
-        await nativeInstance.get(_unwrapDocumentReference(documentRef)!),
-      );
+  Future<DocumentSnapshot> get(DocumentReference documentRef) => _wrapErrors(
+    () async => _wrapDocumentSnapshot(
+      firestore,
+      await nativeInstance.get(_unwrapDocumentReference(documentRef)!),
+    ),
+  );
 
   @override
   void set(
@@ -196,7 +230,7 @@ class WriteBatchFlutter implements WriteBatch {
   WriteBatchFlutter(this.nativeInstance);
 
   @override
-  Future commit() => nativeInstance.commit();
+  Future commit() => _wrapErrors(() => nativeInstance.commit());
 
   @override
   void delete(DocumentReference? ref) =>
@@ -254,9 +288,9 @@ dynamic toNativeValue(Object? value) {
     } else if (FieldValue.serverTimestamp == value) {
       return native.FieldValue.serverTimestamp();
     } else if (value.type == FieldValueType.arrayUnion) {
-      return native.FieldValue.arrayUnion(value.data as List);
+      return native.FieldValue.arrayUnion(toNativeValues(value.data as List)!);
     } else if (value.type == FieldValueType.arrayRemove) {
-      return native.FieldValue.arrayRemove(value.data as List);
+      return native.FieldValue.arrayRemove(toNativeValues(value.data as List)!);
     } else if (value is FieldValueIncrement) {
       return native.FieldValue.increment(value.data);
     }
@@ -324,6 +358,13 @@ DocumentData documentDataFromFlutterData(Firestore firestore, Map nativeMap) {
   return DocumentData(map);
 }
 
+/// Stream errors of the plugin as [FirestoreException].
+StreamTransformer<T, T> _errorTransformer<T>() =>
+    StreamTransformer<T, T>.fromHandlers(
+      handleError: (error, stackTrace, sink) =>
+          sink.addError(_firestoreError(error), stackTrace),
+    );
+
 QueryFlutter _wrapQuery(
   Firestore firestore,
   native.Query<Map<String, Object?>> nativeInstance, {
@@ -341,33 +382,57 @@ class QueryFlutter
 
   QueryFlutter(this.firestore, this.nativeInstance, [this.queryInfo]);
 
-  @override
-  Query endAt({DocumentSnapshot? snapshot, List? values}) {
+  /// A cursor at a document [snapshot] ([atDocument]) or at [values] ([at]),
+  /// [queryInfo] updated by [setInfo].
+  Query _cursor({
+    required DocumentSnapshot? snapshot,
+    required List? values,
+    required native.Query<Map<String, Object?>> Function(
+      native.DocumentSnapshot<Map<String, Object?>> snapshot,
+    )
+    atDocument,
+    required native.Query<Map<String, Object?>> Function(List<Object?> values)
+    at,
+    required void Function(QueryInfo queryInfo) setInfo,
+  }) {
+    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo());
+    setInfo(newQueryInfo);
     return _wrapQuery(
       firestore,
-      nativeInstance.endAt(toNativeValue(values) as List),
-      queryInfo: (queryInfo?.clone() ?? QueryInfo())
-        ..endAt(snapshot: snapshot, values: values),
+      snapshot != null
+          ? atDocument(snapshot.flutter.nativeInstance)
+          : at(toNativeValues(values ?? const <Object?>[])!),
+      queryInfo: newQueryInfo,
     );
   }
 
   @override
-  Query endBefore({DocumentSnapshot? snapshot, List? values}) {
-    return _wrapQuery(
-      firestore,
-      nativeInstance.endBefore(toNativeValue(values) as List),
-      queryInfo: (queryInfo?.clone() ?? QueryInfo())
-        ..endBefore(snapshot: snapshot, values: values),
-    );
-  }
+  Query endAt({DocumentSnapshot? snapshot, List? values}) => _cursor(
+    snapshot: snapshot,
+    values: values,
+    atDocument: nativeInstance.endAtDocument,
+    at: nativeInstance.endAt,
+    setInfo: (info) => info.endAt(snapshot: snapshot, values: values),
+  );
 
   @override
-  Future<QuerySnapshot> get() async =>
-      _wrapQuerySnapshot(firestore, await nativeInstance.get());
+  Query endBefore({DocumentSnapshot? snapshot, List? values}) => _cursor(
+    snapshot: snapshot,
+    values: values,
+    atDocument: nativeInstance.endBeforeDocument,
+    at: nativeInstance.endBefore,
+    setInfo: (info) => info.endBefore(snapshot: snapshot, values: values),
+  );
+
+  @override
+  Future<QuerySnapshot> get() => _wrapErrors(
+    () async => _wrapQuerySnapshot(firestore, await nativeInstance.get()),
+  );
 
   /// Simplifies aggregate response.
   @override
-  Future<int> count() async => (await nativeInstance.count().get()).count!;
+  Future<int> count() =>
+      _wrapErrors(() async => (await nativeInstance.count().get()).count!);
 
   @override
   Query limit(int limit) {
@@ -391,7 +456,8 @@ class QueryFlutter
     );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
-        .transform(transformer);
+        .transform(transformer)
+        .transform(_errorTransformer());
   }
 
   @override
@@ -430,42 +496,22 @@ class QueryFlutter
   }
 
   @override
-  Query startAfter({DocumentSnapshot? snapshot, List? values}) {
-    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
-      ..startAfter(snapshot: snapshot, values: values);
-    if (snapshot != null) {
-      return _wrapQuery(
-        firestore,
-        nativeInstance.startAfterDocument(snapshot.flutter.nativeInstance),
-        queryInfo: newQueryInfo,
-      );
-    } else {
-      return _wrapQuery(
-        firestore,
-        nativeInstance.startAfter(toNativeValue(values) as List),
-        queryInfo: newQueryInfo,
-      );
-    }
-  }
+  Query startAfter({DocumentSnapshot? snapshot, List? values}) => _cursor(
+    snapshot: snapshot,
+    values: values,
+    atDocument: nativeInstance.startAfterDocument,
+    at: nativeInstance.startAfter,
+    setInfo: (info) => info.startAfter(snapshot: snapshot, values: values),
+  );
 
   @override
-  Query startAt({DocumentSnapshot? snapshot, List? values}) {
-    var newQueryInfo = (queryInfo?.clone() ?? QueryInfo())
-      ..startAt(snapshot: snapshot, values: values);
-    if (snapshot != null) {
-      return _wrapQuery(
-        firestore,
-        nativeInstance.startAtDocument(snapshot.flutter.nativeInstance),
-        queryInfo: newQueryInfo,
-      );
-    } else {
-      return _wrapQuery(
-        firestore,
-        nativeInstance.startAt(toNativeValue(values) as List),
-        queryInfo: newQueryInfo,
-      );
-    }
-  }
+  Query startAt({DocumentSnapshot? snapshot, List? values}) => _cursor(
+    snapshot: snapshot,
+    values: values,
+    atDocument: nativeInstance.startAtDocument,
+    at: nativeInstance.startAt,
+    setInfo: (info) => info.startAt(snapshot: snapshot, values: values),
+  );
 
   @override
   Query where(
@@ -480,67 +526,51 @@ class QueryFlutter
     List<Object?>? whereIn,
     bool? isNull,
   }) {
+    // Every condition set, in one native where call like cloud_firestore.
     var newQueryInfo = (queryInfo?.clone() ?? QueryInfo());
-    if (isEqualTo != notSetQueryParam) {
-      newQueryInfo.addWhere(WhereInfo(fieldPath, isEqualTo: isEqualTo));
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(fieldPath, isEqualTo: toNativeValue(isEqualTo)),
-        queryInfo: newQueryInfo,
-      );
-    } else if (isLessThan != notSetQueryParam) {
-      newQueryInfo.addWhere(WhereInfo(fieldPath, isLessThan: isLessThan));
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(fieldPath, isLessThan: toNativeValue(isLessThan)),
-        queryInfo: newQueryInfo,
-      );
-    } else if (isLessThanOrEqualTo != notSetQueryParam) {
-      newQueryInfo.addWhere(
-        WhereInfo(fieldPath, isLessThanOrEqualTo: isLessThanOrEqualTo),
-      );
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(
-          fieldPath,
-          isLessThanOrEqualTo: toNativeValue(isLessThanOrEqualTo),
-        ),
-        queryInfo: newQueryInfo,
-      );
-    } else if (isGreaterThan != notSetQueryParam) {
-      newQueryInfo.addWhere(WhereInfo(fieldPath, isGreaterThan: isGreaterThan));
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(
-          fieldPath,
-          isGreaterThan: toNativeValue(isGreaterThan),
-        ),
-        queryInfo: newQueryInfo,
-      );
-    } else if (isGreaterThanOrEqualTo != notSetQueryParam) {
-      newQueryInfo.addWhere(
-        WhereInfo(fieldPath, isGreaterThanOrEqualTo: isGreaterThanOrEqualTo),
-      );
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(
-          fieldPath,
-          isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo),
-        ),
-        queryInfo: newQueryInfo,
-      );
-    } else if (arrayContains != notSetQueryParam) {
-      newQueryInfo.addWhere(WhereInfo(fieldPath, arrayContains: arrayContains));
-      return _wrapQuery(
-        firestore,
-        nativeInstance.where(
-          fieldPath,
-          arrayContains: toNativeValue(arrayContains),
-        ),
-        queryInfo: newQueryInfo,
-      );
+    var nativeConditions = <Symbol, Object?>{};
+    void addValue(Symbol name, Object? value, WhereInfo whereInfo) {
+      if (value != notSetQueryParam) {
+        nativeConditions[name] = toNativeValue(value);
+        newQueryInfo.addWhere(whereInfo);
+      }
     }
+
+    addValue(
+      #isEqualTo,
+      isEqualTo,
+      // isEqualTo: null is an isNull: true filter (like cloud_firestore).
+      isEqualTo == null
+          ? WhereInfo(fieldPath, isNull: true)
+          : WhereInfo(fieldPath, isEqualTo: isEqualTo),
+    );
+    addValue(
+      #isLessThan,
+      isLessThan,
+      WhereInfo(fieldPath, isLessThan: isLessThan),
+    );
+    addValue(
+      #isLessThanOrEqualTo,
+      isLessThanOrEqualTo,
+      WhereInfo(fieldPath, isLessThanOrEqualTo: isLessThanOrEqualTo),
+    );
+    addValue(
+      #isGreaterThan,
+      isGreaterThan,
+      WhereInfo(fieldPath, isGreaterThan: isGreaterThan),
+    );
+    addValue(
+      #isGreaterThanOrEqualTo,
+      isGreaterThanOrEqualTo,
+      WhereInfo(fieldPath, isGreaterThanOrEqualTo: isGreaterThanOrEqualTo),
+    );
+    addValue(
+      #arrayContains,
+      arrayContains,
+      WhereInfo(fieldPath, arrayContains: arrayContains),
+    );
     if (arrayContainsAny != null) {
+      nativeConditions[#arrayContainsAny] = toNativeValues(arrayContainsAny);
       newQueryInfo.addWhere(
         WhereInfo(
           fieldPath,
@@ -549,23 +579,19 @@ class QueryFlutter
       );
     }
     if (whereIn != null) {
+      nativeConditions[#whereIn] = toNativeValues(whereIn);
       newQueryInfo.addWhere(
         WhereInfo(fieldPath, whereIn: whereIn.whereType<Object>().toList()),
       );
     }
     if (isNull != null) {
+      nativeConditions[#isNull] = isNull;
       newQueryInfo.addWhere(WhereInfo(fieldPath, isNull: isNull));
     }
-    return _wrapQuery(
-      firestore,
-      nativeInstance.where(
-        fieldPath,
-        arrayContainsAny: toNativeValues(arrayContainsAny),
-        whereIn: toNativeValues(whereIn),
-        isNull: isNull,
-      ),
-      queryInfo: newQueryInfo,
-    );
+    var nativeQuery =
+        Function.apply(nativeInstance.where, [fieldPath], nativeConditions)
+            as native.Query<Map<String, Object?>>;
+    return _wrapQuery(firestore, nativeQuery, queryInfo: newQueryInfo);
   }
 
   @override
@@ -600,11 +626,12 @@ class CollectionReferenceFlutter extends QueryFlutter
       super.nativeInstance as native.CollectionReference<Map<String, Object?>>;
 
   @override
-  Future<DocumentReference> add(Map<String, Object?> data) async =>
-      wrapDocumentReference(
-        firestore,
-        await nativeInstance.add(documentDataToFlutterData(DocumentData(data))),
-      );
+  Future<DocumentReference> add(Map<String, Object?> data) => _wrapErrors(
+    () async => wrapDocumentReference(
+      firestore,
+      await nativeInstance.add(documentDataToFlutterData(DocumentData(data))),
+    ),
+  );
 
   @override
   DocumentReference doc([String? path]) {
@@ -689,11 +716,12 @@ class DocumentReferenceFlutter
       _wrapCollectionReference(firestore, nativeInstance.collection(path));
 
   @override
-  Future delete() => nativeInstance.delete();
+  Future delete() => _wrapErrors(() => nativeInstance.delete());
 
   @override
-  Future<DocumentSnapshot> get() async =>
-      _wrapDocumentSnapshot(firestore, await nativeInstance.get());
+  Future<DocumentSnapshot> get() => _wrapErrors(
+    () async => _wrapDocumentSnapshot(firestore, await nativeInstance.get()),
+  );
 
   @override
   String get id => nativeInstance.id;
@@ -724,7 +752,8 @@ class DocumentReferenceFlutter
     );
     return nativeInstance
         .snapshots(includeMetadataChanges: includeMetadataChanges)
-        .transform(transformer);
+        .transform(transformer)
+        .transform(_errorTransformer());
   }
 
   // _TODO: implement parent
@@ -738,15 +767,17 @@ class DocumentReferenceFlutter
   String get path => nativeInstance.path;
 
   @override
-  Future set(Map<String, Object?> data, [SetOptions? options]) =>
-      nativeInstance.set(
-        documentDataToFlutterData(DocumentData(data)),
-        unwrapSetOption(options),
-      );
+  Future set(Map<String, Object?> data, [SetOptions? options]) => _wrapErrors(
+    () => nativeInstance.set(
+      documentDataToFlutterData(DocumentData(data)),
+      unwrapSetOption(options),
+    ),
+  );
 
   @override
-  Future update(Map<String, Object?> data) =>
-      nativeInstance.update(documentDataToFlutterData(DocumentData(data)));
+  Future update(Map<String, Object?> data) => _wrapErrors(
+    () => nativeInstance.update(documentDataToFlutterData(DocumentData(data))),
+  );
 
   @override
   String toString() => 'DocRef($path)';

@@ -60,21 +60,44 @@ class AuthCredentialFlutter implements AuthCredential {
   String get providerId => nativeInstance.providerId;
 }
 
+/// The credential of a sign in without one from the plugin (FlutterFire
+/// gives none for email/password or anonymous sign in).
+class _AuthCredentialNoneFlutter implements AuthCredential {
+  @override
+  final String providerId;
+
+  _AuthCredentialNoneFlutter(this.providerId);
+}
+
 /// Flutter impl
 class UserCredentialFlutter implements UserCredential {
   /// The native instance
   final native.UserCredential nativeInstance;
   User? _user;
 
+  /// The auth that signed in, to keep its current user up to date.
+  AuthFlutterImpl? _auth;
+
   /// Constructor
   UserCredentialFlutter(this.nativeInstance);
 
   @override
-  AuthCredential get credential =>
-      AuthCredentialFlutter(nativeInstance.credential!);
+  AuthCredential get credential {
+    var nativeCredential = nativeInstance.credential;
+    if (nativeCredential != null) {
+      return AuthCredentialFlutter(nativeCredential);
+    }
+    return _AuthCredentialNoneFlutter(
+      nativeInstance.additionalUserInfo?.providerId ??
+          (nativeInstance.user?.isAnonymous ?? false
+              ? 'anonymous'
+              : 'password'),
+    );
+  }
 
   @override
-  User get user => _user ??= wrapUser(nativeInstance.user)!;
+  User get user =>
+      _user ??= _UserFlutterImpl(nativeInstance.user!).._auth = _auth;
 
   @override
   String toString() => 'UserCredentialFlutter($user)';
@@ -84,6 +107,9 @@ class _UserFlutterImpl
     with FirebaseUserMixin
     implements User, UserInfoWithIdToken {
   final native.User nativeInstance;
+
+  /// The auth of the user, to update its current user on delete.
+  AuthFlutterImpl? _auth;
 
   _UserFlutterImpl(this.nativeInstance);
 
@@ -105,8 +131,9 @@ class _UserFlutterImpl
   @override
   String? get photoURL => nativeInstance.photoURL;
 
+  /// 'firebase', as the native user gave before firebase_auth dropped it.
   @override
-  String? get providerId => null; // no longer supported - nativeInstance.providerId;
+  String? get providerId => 'firebase';
 
   @override
   String get uid => nativeInstance.uid;
@@ -122,6 +149,7 @@ class _UserFlutterImpl
   @override
   common.Future<void> delete() async {
     await nativeInstance.delete();
+    _auth?._addNativeCurrentUser();
   }
 }
 
@@ -155,8 +183,36 @@ class AuthFlutterImpl
     _onAuthStateChangedSubscription = nativeAuth.authStateChanges().listen((
       user,
     ) {
-      currentUserAdd(wrapUser(user));
+      _addCurrentUser(user);
     });
+  }
+
+  /// True once a current user (or null) has been added.
+  var _currentUserAdded = false;
+
+  /// The uid of the last current user added.
+  String? _currentUserUid;
+
+  /// Adds [user] as the current user, unless it is the one already added
+  /// ([force] to add it again, for a reload).
+  void _addCurrentUser(native.User? user, {bool force = false}) {
+    if (!force && _currentUserAdded && _currentUserUid == user?.uid) {
+      return;
+    }
+    _currentUserAdded = true;
+    _currentUserUid = user?.uid;
+    currentUserAdd(
+      user == null ? null : (_UserFlutterImpl(user).._auth = this),
+    );
+  }
+
+  /// The native current user added right away: the native state changes on
+  /// sign in, sign out or delete, the authStateChanges event comes later.
+  void _addNativeCurrentUser() => _addCurrentUser(nativeAuth.currentUser);
+
+  UserCredentialFlutter _signedIn(native.UserCredential userCredential) {
+    _addNativeCurrentUser();
+    return UserCredentialFlutter(userCredential).._auth = this;
   }
 
   @override
@@ -169,7 +225,7 @@ class AuthFlutterImpl
       password: password,
     );
 
-    return UserCredentialFlutter(userCredential);
+    return _signedIn(userCredential);
   }
 
   @override
@@ -182,14 +238,14 @@ class AuthFlutterImpl
       password: password,
     );
 
-    return UserCredentialFlutter(userCredential);
+    return _signedIn(userCredential);
   }
 
   @override
   Future<UserCredential> signInAnonymously() async {
     var userCredential = await nativeAuth.signInAnonymously();
 
-    return UserCredentialFlutter(userCredential);
+    return _signedIn(userCredential);
   }
 
   /// App
@@ -203,9 +259,9 @@ class AuthFlutterImpl
   @override
   Future<User?> reloadCurrentUser() async {
     await (nativeAuth.currentUser)?.reload();
-    _listenToCurrentUser();
-
-    return wrapUser((nativeAuth.currentUser));
+    // The reloaded user (same uid, new info).
+    _addCurrentUser(nativeAuth.currentUser, force: true);
+    return currentUser;
   }
 
   @override
@@ -227,6 +283,7 @@ class AuthFlutterImpl
   @override
   Future signOut() async {
     await nativeAuth.signOut();
+    _addNativeCurrentUser();
   }
 
   @override

@@ -47,7 +47,6 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
   @override
   Future<App> initializeAppAsync({AppOptions? options, String? name}) async {
     flutter.FirebaseApp nativeApp;
-    var isDefault = false;
     if (options != null) {
       if (options is _FirebaseAppOptionsFlutter) {
         nativeApp = await flutter.Firebase.initializeApp(
@@ -60,21 +59,18 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
       if (options.projectId == null) {
         nativeApp = await flutter.Firebase.initializeApp(name: name);
       } else {
-        nativeApp = await flutter.Firebase.initializeApp(
-          name: name,
-          options: flutter.FirebaseOptions(
-            apiKey: options.apiKey!,
-            appId: options.appId!,
-            messagingSenderId: options.messagingSenderId!,
-            projectId: options.projectId!,
-          ),
+        // Checked before creating the native app, which would be left
+        // behind.
+        throw UnsupportedError(
+          'Options other than the flutter ones (projectId ${options.projectId})'
+          ' are not supported yet',
         );
-        throw 'not supported yet';
       }
     } else {
-      isDefault = true;
       nativeApp = await flutter.Firebase.initializeApp(name: name);
     }
+    // Default whatever the options, a named app is not.
+    var isDefault = nativeApp.name == flutter.defaultFirebaseAppName;
     options = wrapOptions(nativeApp.options);
 
     var app = _FirebaseAppFlutter(
