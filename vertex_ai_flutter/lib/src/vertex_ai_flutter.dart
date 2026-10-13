@@ -107,7 +107,9 @@ class _FirebaseVertexAiFlutter
     String? model,
     GenerationConfig? generationConfig,
   }) {
-    model ??= vertexAiModelGemini1dot5Flash;
+    // vertexAiModelDefault, as a literal until every user resolves a
+    // tekartik_firebase_vertex_ai that defines it.
+    model ??= 'gemini-2.5-flash';
     var nativeModel = fbVertexAi.generativeModel(
       model: model,
       generationConfig: generationConfig?.toFbGenerationConfig(),
@@ -160,6 +162,7 @@ extension on GenerationConfig {
   fb.GenerationConfig toFbGenerationConfig() {
     return fb.GenerationConfig(
       candidateCount: candidateCount,
+      stopSequences: stopSequences.isEmpty ? null : stopSequences,
       maxOutputTokens: maxOutputTokens,
       temperature: temperature,
       topP: topP,
