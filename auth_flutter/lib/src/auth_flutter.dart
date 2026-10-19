@@ -151,6 +151,37 @@ class _UserFlutterImpl
     await nativeInstance.delete();
     _auth?._addNativeCurrentUser();
   }
+
+  @override
+  Future<UserCredential> linkWithCredential(AuthCredential credential) async {
+    var userCredential = await nativeInstance.linkWithCredential(
+      _nativeCredential(credential),
+    );
+    // Same uid: authStateChanges does not fire, the linked user is added
+    // again.
+    var auth = _auth;
+    auth?._addCurrentUser(auth.nativeAuth.currentUser, force: true);
+    return UserCredentialFlutter(userCredential).._auth = auth;
+  }
+}
+
+/// The native credential of [credential], a flutter or an email and password
+/// one.
+native.AuthCredential _nativeCredential(AuthCredential credential) {
+  if (credential is AuthCredentialFlutter) {
+    return credential.nativeInstance;
+  }
+  if (credential is FirebaseAuthEmailPasswordCredential) {
+    return native.EmailAuthProvider.credential(
+      email: credential.email,
+      password: credential.password,
+    );
+  }
+  throw ArgumentError.value(
+    credential,
+    'credential',
+    'Unsupported ${credential.providerId} credential',
+  );
 }
 
 /// Flutter impl

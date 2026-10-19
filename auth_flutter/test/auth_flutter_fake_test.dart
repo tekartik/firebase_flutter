@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as native;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_flutter/src/auth_flutter.dart';
 import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
 
@@ -21,7 +22,24 @@ class _FakeUser implements native.User {
   _FakeUser(this.uid);
 
   @override
-  bool get isAnonymous => true;
+  bool isAnonymous = true;
+
+  @override
+  String? email;
+
+  /// The last credential linked.
+  native.AuthCredential? linkedCredential;
+
+  /// Like the plugin: the user changes in place, no authStateChanges event.
+  @override
+  Future<native.UserCredential> linkWithCredential(
+    native.AuthCredential credential,
+  ) async {
+    linkedCredential = credential;
+    isAnonymous = false;
+    email = (credential as native.EmailAuthCredential).email;
+    return _FakeUserCredential(this);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
@@ -106,6 +124,36 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(auth.currentUser?.uid, 'u2');
       expect(events, ['u2']);
+      await subscription.cancel();
+    });
+
+    test('linkWithCredential adds the linked user right away', () async {
+      var nativeAuth = _FakeAuth();
+      var auth = AuthFlutterImpl(
+        AuthServiceFlutterImpl(),
+        _FakeApp(),
+        nativeAuth,
+      );
+      var user = (await auth.signInAnonymously()).user;
+      expect(user.isAnonymous, isTrue);
+      var events = <bool?>[];
+      var subscription = auth.onCurrentUser.listen(
+        (user) => events.add(user?.isAnonymous),
+      );
+      var linked = await user.linkWithCredential(
+        FirebaseAuthEmailPasswordCredential(
+          email: 'link@example.com',
+          password: 'password',
+        ),
+      );
+      var nativeUser = nativeAuth.currentUser as _FakeUser;
+      expect(nativeUser.linkedCredential?.providerId, 'password');
+      expect(linked.user.uid, 'u2');
+      expect(linked.user.isAnonymous, isFalse);
+      expect(auth.currentUser?.uid, 'u2');
+      expect(auth.currentUser?.email, 'link@example.com');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(events.last, isFalse);
       await subscription.cancel();
     });
   });
