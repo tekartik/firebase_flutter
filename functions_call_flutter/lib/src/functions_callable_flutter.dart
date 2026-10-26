@@ -7,8 +7,11 @@ import 'package:tekartik_firebase_functions_call/functions_call_mixin.dart';
 import 'functions_call_flutter.dart';
 
 /// Firebase functions callable flutter.
-class FirebaseFunctionsCallableFlutter
-    with FirebaseFunctionsCallableDefaultMixin
+///
+/// An interface without the default mixin: dart2js puts a factory-only class
+/// applying a mixin in the main part and the mixin in a deferred part, and
+/// the main part then throws at startup when this package is deferred.
+abstract class FirebaseFunctionsCallableFlutter
     implements FirebaseFunctionsCallable {
   @protected
   /// Constructor
