@@ -39,11 +39,40 @@ class _FirebaseAppOptionsFlutter with FirebaseAppOptionsMixin {
   @override
   String? get storageBucket => nativeInstance.storageBucket;
 
-  @override
-  Map<String, Object?> toDebugMap() => nativeInstance.asMap;
+  // toDebugMap: the mixin one (project id and obfuscated api key), never
+  // the native map (api key in clear, client ids).
 }
 
 class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
+  /// One app per native app name: the products and services registered on
+  /// an app are found again when the app is asked again.
+  final _apps = <String, _FirebaseAppFlutter>{};
+
+  /// The app of [nativeApp], created once (registered as the latest app).
+  App _wrapApp(flutter.FirebaseApp nativeApp) {
+    var name = nativeApp.name;
+    var app = _apps[name];
+    if (app == null || app.nativeInstance != nativeApp) {
+      app = _FirebaseAppFlutter(
+        firebaseFlutter: this,
+        nativeInstance: nativeApp,
+        options: wrapOptions(nativeApp.options),
+        // Default whatever the options, a named app is not.
+        isDefault: name == flutter.defaultFirebaseAppName,
+      );
+      _apps[name] = app;
+    }
+    return FirebaseMixin.addApp(app);
+  }
+
+  /// Called once [app] is deleted.
+  void _removeApp(_FirebaseAppFlutter app) {
+    var name = app.name;
+    if (identical(_apps[name], app)) {
+      _apps.remove(name);
+    }
+  }
+
   @override
   Future<App> initializeAppAsync({AppOptions? options, String? name}) async {
     flutter.FirebaseApp nativeApp;
@@ -69,33 +98,14 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
     } else {
       nativeApp = await flutter.Firebase.initializeApp(name: name);
     }
-    // Default whatever the options, a named app is not.
-    var isDefault = nativeApp.name == flutter.defaultFirebaseAppName;
-    options = wrapOptions(nativeApp.options);
-
-    var app = _FirebaseAppFlutter(
-      firebaseFlutter: this,
-      nativeInstance: nativeApp,
-      options: options,
-      isDefault: isDefault,
-    );
-    return FirebaseMixin.addApp(app);
+    return _wrapApp(nativeApp);
   }
 
   @override
   App initializeApp({AppOptions? options, String? name}) {
     if (options == null && name == null) {
       // TODO 2020-08-26 if this fail, consider calling async method only
-      var nativeApp = flutter.Firebase.app();
-
-      options = wrapOptions(nativeApp.options);
-      var app = _FirebaseAppFlutter(
-        firebaseFlutter: this,
-        nativeInstance: nativeApp,
-        options: options,
-        isDefault: true,
-      );
-      return FirebaseMixin.addApp(app);
+      return _wrapApp(flutter.Firebase.app());
     } else {
       throw 'not supported, use async method';
     }
@@ -104,14 +114,7 @@ class _FirebaseFlutter with FirebaseMixin implements FirebaseFlutter {
   @override
   App app({String? name}) {
     if (name == null) {
-      var nativeApp = flutter.Firebase.app();
-      var app = _FirebaseAppFlutter(
-        firebaseFlutter: this,
-        nativeInstance: nativeApp,
-        options: wrapOptions(nativeApp.options),
-        isDefault: true,
-      );
-      return FirebaseMixin.addApp(app);
+      return _wrapApp(flutter.Firebase.app());
     }
     throw UnsupportedError(
       'Flutter has only a single default app instantiated',
@@ -157,6 +160,7 @@ class _FirebaseAppFlutter with FirebaseAppMixin implements FirebaseAppFlutter {
   @override
   Future delete() async {
     await super.delete();
+    (firebaseFlutter as _FirebaseFlutter)._removeApp(this);
     await nativeInstance?.delete();
   }
 

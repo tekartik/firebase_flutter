@@ -29,7 +29,6 @@ vertex ai) so all shared code keeps depending on the abstractions only.
       git:
         url: https://github.com/tekartik/firebase_flutter
         path: firebase_flutter
-      version: '>=0.7.2'
   ```
   It brings `tekartik_firebase` (repo `firebase.dart`, `path: firebase`) and
   `firebase_core`; declare either explicitly when you import it directly.
@@ -68,6 +67,11 @@ vertex ai) so all shared code keeps depending on the abstractions only.
 * Only the default app is supported: `app(name: ...)` with a non-null name
   throws `UnsupportedError`, and `appAsync(name:)` just re-initializes the
   default app. Do not design around multiple named apps on Flutter.
+* `initializeAppAsync`, `appAsync`, `initializeApp` and `app` return the same
+  `FirebaseApp` for the same native app, with the products already
+  registered on it (a new one after `delete()`).
+* `app.options.toDebugMap()` is the project id and an obfuscated api key, as
+  on every backend: log it, never the native `FirebaseOptions`.
 * `firebaseFlutter.isLocal` is `false` and `app.hasAdminCredentials` is
   `false`: never expect admin/service-account behaviour here, and use
   `tekartik_firebase_local` + the memory product services for unit tests.
@@ -87,8 +91,10 @@ vertex ai) so all shared code keeps depending on the abstractions only.
   `firebaseFunctionsCallServiceFlutter.functionsCall(app)`
   (`tekartik_firebase_functions_call_flutter`).
 * Tests: `flutter test` runs without a native binding, so
-  `initializeAppAsync()` fails there. Unit-test only the pure parts
-  (`wrapOptions`, `isLocal`); test real initialization in an
+  `initializeAppAsync()` fails there unless `setupFirebaseCoreMocks()`
+  (`package:firebase_core_platform_interface/test.dart`, a dev dependency)
+  is called first (after `TestWidgetsFlutterBinding.ensureInitialized()`).
+  Test the data code on the memory backends; test real initialization in an
   `integration_test` on a device or emulator.
 * `AppFlutter` is a deprecated typedef of `FirebaseAppFlutter` and is not
   exported by the public library: use `FirebaseAppFlutter`.
@@ -185,4 +191,5 @@ void main() {
   `firebaseFlutter.wrapOptions(...)` (throws `'not supported yet'`).
 * Using the sync `initializeApp` / `app` in code shared with other backends.
 * Expecting named apps: only the default app exists on Flutter.
-* Calling `initializeAppAsync()` in a plain `flutter test` unit test.
+* Calling `initializeAppAsync()` in a `flutter test` without
+  `setupFirebaseCoreMocks()`.
