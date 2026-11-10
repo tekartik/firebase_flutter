@@ -53,7 +53,9 @@ Flutter.
   `regionUsCentral1`, `regionFrankfurt` or the raw region string of your
   deployment. Instances are cached per `(app.name, region)`, so asking twice
   for the same region returns the same object and several regions can live
-  side by side.
+  side by side. The cache outlives `app.delete()`: a new app of the same name
+  gets the instance of the deleted app, so do not delete and re-create the
+  app.
 * `FirebaseFunctionsCallOptions.baseUri` is ignored on Flutter: the native SDK
   resolves the endpoint itself. Use `callableFromUri` when you need a specific
   url.
@@ -213,5 +215,7 @@ class ApiClient {
 * Catching `FirebaseFunctionsException`: this package always throws
   `HttpsError`.
 * Passing a model object to `call(...)` instead of a JSON map.
+* Deleting the app and initializing a new one of the same name: the cached
+  `FirebaseFunctionsCall` still uses the deleted app.
 * Asking for a `T` that does not match what the function returns (the cast
   throws inside `call`).
