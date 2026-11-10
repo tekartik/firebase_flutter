@@ -7,8 +7,8 @@ description: >-
   FirestoreFlutter, FirestoreFlutterExt.useFirestoreEmulator, the
   package:tekartik_firebase_firestore_flutter/firestore_flutter.dart import,
   the supportsXxx flags of the flutter service (no select, no
-  createTime/updateTime, aggregate queries, vector values, blobs), one
-  condition per where() call, onSnapshot / includeMetadataChanges and
+  createTime/updateTime, aggregate queries, vector values, blobs), where()
+  with several conditions, cursors, onSnapshot / includeMetadataChanges and
   SnapshotMetadata on Flutter.
 ---
 
@@ -29,7 +29,6 @@ to the native FlutterFire plugin.
       git:
         url: https://github.com/tekartik/firebase_flutter
         path: firestore_flutter
-      version: '>=0.4.0'
   ```
   It brings `tekartik_firebase_firestore`, `tekartik_firebase_flutter` and
   `cloud_firestore`; declare the ones you import directly too.
@@ -44,8 +43,9 @@ to the native FlutterFire plugin.
   `firestoreServiceFlutter`.
 * Get the database with `firestoreServiceFlutter.firestore(app)` where `app`
   comes from `firebaseFlutter` (`tekartik_firebase_flutter`). The app must be a
-  Flutter app (`FirebaseAppFlutter`: an `assert` fires otherwise) and the
-  instance is cached per app. Keep the `Firestore` in one place (a provider, a
+  Flutter app (`FirebaseAppFlutter`: an `assert` fires otherwise).
+  `firestoreServiceFlutter` is a single instance and its `Firestore` is cached
+  per app (`app.firestore()` returns it afterwards). Keep the `Firestore` in one place (a provider, a
   singleton holder) and pass it around; write shared code against `Firestore`,
   never against this package.
 * Emulator: the extension method is on `FirestoreFlutter`, so cast:
@@ -55,30 +55,35 @@ to the native FlutterFire plugin.
   `automaticHostMapping: true` (so `10.0.2.2` on the Android emulator is
   handled). Call it right after getting the `Firestore`, before any read or
   write.
-* `firestore.settings(FirestoreSettings(...))` is effectively a no-op here: it
-  resets the native settings to the defaults. Configure persistence or cache
-  size through `cloud_firestore` directly if you need it.
+* `firestore.settings(FirestoreSettings(...))` is a no-op here (the native
+  settings are kept). Configure persistence or cache size through
+  `cloud_firestore` directly if you need it.
 * Feature flags of `firestoreServiceFlutter` (check them in shared code with
   `firestore.service.supportsXxx`): `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsFieldValueArray`,
   `supportsFieldValueIncrement`,
-  `supportsAggregateQueries`, `supportsVectorValue`, `supportsBlobs` and
+  `supportsAggregateQueries`, `supportsVectorValue`, `supportsBlobs`,
+  `supportsQuerySnapshotCursor` (start/end at a snapshot) and
   `supportsTrackChanges` are `true`; `supportsQuerySelect`,
-  `supportsDocumentSnapshotTime` and `supportsQuerySnapshotCursor` are `false`.
+  `supportsDocumentSnapshotTime` and `supportsListMissingDocuments` are
+  `false`.
 * Consequences of the `false` flags: `query.select([...])` silently returns the
   query unchanged (always full documents), and `snapshot.createTime` /
   `snapshot.updateTime` are always `null` - store your own
   `FieldValue.serverTimestamp` field when you need a modification time.
-* One condition per `where()` call: the flutter implementation applies the
-  first non-default parameter only (`isEqualTo`, then `isLessThan`,
-  `isLessThanOrEqualTo`, `isGreaterThan`, `isGreaterThanOrEqualTo`,
-  `arrayContains`, then the `arrayContainsAny`/`whereIn`/`isNull` group).
-  Chain `.where(...).where(...)` instead of passing two criteria at once.
+* Every condition of a `where()` call applies (one native `where` call with
+  all of them, as cloud_firestore): `where('age', isGreaterThan: 1,
+  isLessThan: 5)` is a range. Chaining `.where(...).where(...)` works too. A
+  cursor can be values (`startAt(values: [...])`, a prefix of the order bys)
+  or a snapshot of this backend (`startAfter(snapshot: lastDoc)`).
 * Values are converted both ways: `Timestamp`, `Blob`, `GeoPoint`,
   `VectorValue`, `DocumentReference`, `FieldValue.serverTimestamp`,
   `FieldValue.delete`, `FieldValue.arrayUnion/arrayRemove` and nested
-  lists/maps. Anything else throws `'not supported <type>'` at write time, so
-  convert your models to plain JSON values (`DocumentData` helpers) first.
+  lists/maps; a `DateTime` is written as a `Timestamp`. Anything else throws
+  (a String, `'not supported <type>'`) at write time, so convert your models
+  to plain JSON values (`DocumentData` helpers) first. A
+  `DocumentReference` or a snapshot of another backend (the firestore logger
+  wrappers) is rejected too.
 * Snapshots: `docRef.onSnapshot(includeMetadataChanges: true)` and
   `query.onSnapshot(...)` are native streams; `snapshot.metadata`
   (`hasPendingWrites`, `isFromCache`) is real here and is what offline mode
@@ -88,10 +93,12 @@ to the native FlutterFire plugin.
   30 fields). `firestore.getAll(refs)` is *not* atomic on Flutter, it is a
   `Future.wait` of individual gets - use `runTransaction` when you need
   consistency.
-* Unit tests (`flutter test`) have no native plugin: only the service metadata
-  (`firestoreServiceFlutter.supportsBlobs`, ...) can be asserted. Test your
-  logic against an in-memory service (`tekartik_firebase_firestore_sembast`)
-  and keep the flutter service for the app and `integration_test`.
+* Unit tests (`flutter test`) have no native plugin: with
+  `setupFirebaseCoreMocks()` (`package:firebase_core_platform_interface/test.dart`)
+  you can create the app and the `Firestore` (the instances, the service
+  metadata), not read or write. Test your logic against an in-memory service
+  (`tekartik_firebase_firestore_sembast`) and keep the flutter service for
+  the app and `integration_test`.
 
 ## Examples
 
@@ -149,7 +156,7 @@ Future<void> demo(Firestore firestore) async {
     print(snapshot.data['name']);
   }
 
-  // One condition per where() call.
+  // Several conditions per where() call, or chained calls.
   var query = users
       .where('age', isGreaterThanOrEqualTo: 18)
       .where('active', isEqualTo: true)
@@ -219,7 +226,6 @@ Future<void> deleteAll(Firestore firestore, List<DocumentReference> refs) async 
 
 * Passing a non-Flutter `FirebaseApp` (memory, rest) to
   `firestoreServiceFlutter.firestore(app)`.
-* Two criteria in a single `where()` call: the second one is ignored.
 * Expecting `select()`, `snapshot.updateTime` or `snapshot.createTime` to work.
 * Calling `useFirestoreEmulator` on a `Firestore` typed variable without the
   `as FirestoreFlutter` cast, or after the first read/write.

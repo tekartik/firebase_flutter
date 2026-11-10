@@ -56,8 +56,10 @@ FirestoreServiceFlutter? _firestoreServiceFlutter;
 
 FirestoreService get firestoreService => firestoreServiceFlutter;
 
+/// The flutter firestore service, a single instance (its firestore per app is
+/// cached).
 FirestoreService get firestoreServiceFlutter =>
-    _firestoreServiceFlutter ?? FirestoreServiceFlutter();
+    _firestoreServiceFlutter ??= FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin

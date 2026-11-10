@@ -39,13 +39,18 @@ abstraction of `tekartik_firebase_auth`, backed by the official
   getter) when you need `nativeInstance`. The `nativeInstance` extension
   getter on any `FirebaseAuth` also works but throws on other backends.
 * `currentUser` and `onCurrentUser` are fed by the native
-  `authStateChanges()` stream (`supportsCurrentUser` is `true`). Listen to
+  `authStateChanges()` stream (`supportsCurrentUser` is `true`), and updated
+  right away by the sign in, sign out and delete calls of this package (the
+  native event comes later and is not emitted twice). Listen to
   `onCurrentUser` in a `StreamBuilder`; call `reloadCurrentUser()` after an
   email verification to refresh `emailVerified`.
 * Supported: `signInWithEmailAndPassword`, `createUserWithEmailAndPassword`,
   `signInAnonymously`, `signOut`, `sendEmailVerification` (current user),
-  `sendPasswordResetEmail(email:)` (since 0.10.x) and the
-  `signInOrUpWithEmailAndPassword` helper of `TekartikFirebaseAuthExt`.
+  `sendPasswordResetEmail(email:)` (since 0.10.x), `User.delete()`,
+  `User.linkWithCredential` (a `FirebaseAuthEmailPasswordCredential`, or the
+  native `credential` of a `UserCredential` of this package; links an
+  anonymous user, `onCurrentUser` emits the linked user) and the `signInOrUpWithEmailAndPassword` helper of
+  `TekartikFirebaseAuthExt`.
 * Not supported (throws `UnsupportedError`): `signIn(provider)`,
   `listUsers`, `getUser`, `getUserByEmail`, `verifyIdToken`
   (`supportsListUsers` is `false`). Federated providers (Google, Apple...)
@@ -53,12 +58,14 @@ abstraction of `tekartik_firebase_auth`, backed by the official
   or better through the screens of `tekartik_firebase_flutter_ui_auth`;
   `currentUser` follows automatically. Admin lookups belong to the node or
   admin backends, never to a client app.
-* Read `UserCredential.user`, not `UserCredential.credential`: after an
-  email/password sign in the native credential is `null` and the getter
-  throws.
+* `UserCredential.credential` is the native credential when FlutterFire
+  gives one, otherwise a credential with only its `providerId` (`password`,
+  `anonymous`, or the provider of the additional user info): read the user
+  from `UserCredential.user`.
 * The wrapped `User` implements `UserInfoWithIdToken`: cast it to call
   `getIdToken()` when a secured backend needs the token. `User.providerId` is
-  always `null` here.
+  always `'firebase'` here (the provider of the sign in is in
+  `UserCredential.credential.providerId`).
 * Web: call `await auth.webSetIndexedDbPersistence()` right after creating
   the auth so the session survives page reloads. It is a no-op on other
   platforms and on other backends, so it is safe in shared code.

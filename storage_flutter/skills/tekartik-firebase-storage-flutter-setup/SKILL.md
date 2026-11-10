@@ -28,7 +28,6 @@ partial implementation: read the caveats below before relying on a member.
       git:
         url: https://github.com/tekartik/firebase_flutter
         path: storage_flutter
-      version: '>=0.4.0'
   ```
   It brings `tekartik_firebase_storage`, `tekartik_firebase_flutter` and
   `firebase_storage`; declare the ones you import directly too.
@@ -57,20 +56,20 @@ partial implementation: read the caveats below before relying on a member.
     the metadata `size` first), so keep it for small files.
   - `file.exists()` (a failing `getMetadata` means `false`, so a permission
     error also reads as `false`), `file.delete()`.
-* Metadata: `file.metadata` is always `null` on Flutter. `file.getMetadata()`
-  returns a `FileMetadata` (`size`, `dateUpdated`, `md5Hash`, `contentType`)
-  but only after the file's native reference has been resolved by another
-  call: call `await file.exists()` (or a read/write) first, otherwise it
-  throws on a null reference.
+* Metadata: `file.metadata` is always `null` on Flutter (listed files
+  included). `file.getMetadata()` returns a `FileMetadata` (`size`,
+  `dateUpdated`, `md5Hash`, `contentType`, `cacheControl`) on any file
+  (it throws for a missing file).
 * Download urls: `storage.ref(path).getDownloadUrl()` (`path` relative to the
   default bucket, or a full `gs://bucket/path` url). `Reference` only exposes
   `getDownloadUrl()`; use `firebase_storage` directly for upload tasks with
   progress, resumable uploads or `putFile`.
 * Listing: `bucket.getFiles(GetFilesOptions(prefix: 'dir/', maxResults: 50))`.
-  `autoPaginate` is *not* honoured here: one call returns one page, and you
-  must loop while `response.nextQuery != null`, passing it back to
-  `getFiles`. The listing walks sub-prefixes too, so `files` of a page can be
-  empty while `nextQuery` is not null: never stop on an empty page.
+  The prefix is a plain string prefix (like Cloud Storage), the sub folders
+  are walked. With `autoPaginate` (the default) every page is fetched and
+  `maxResults` caps the total; with `autoPaginate: false` one call returns at
+  most `maxResults` files and `nextQuery` gives the next page (null at the
+  end): loop on `nextQuery`, not on the page size.
   `GetFilesResponse.files` holds `File` objects with their full path.
 * Big uploads, progress, streamed downloads, metadata updates, custom
   metadata, `putFile`/`putString` and emulator configuration
@@ -118,7 +117,6 @@ import 'package:tekartik_firebase_storage_flutter/storage_flutter.dart';
 Future<String?> readOrCreate(Storage storage, String path) async {
   var file = storage.bucket().file(path);
   if (await file.exists()) {
-    // Safe here: exists() resolved the native reference.
     print('size ${(await file.getMetadata()).size}');
     return await file.readAsString();
   }
@@ -135,7 +133,11 @@ import 'package:tekartik_firebase_storage_flutter/storage_flutter.dart';
 Future<List<String>> listPaths(Storage storage, String prefix) async {
   var paths = <String>[];
   var bucket = storage.bucket();
-  GetFilesOptions? options = GetFilesOptions(prefix: prefix, maxResults: 50);
+  GetFilesOptions? options = GetFilesOptions(
+    prefix: prefix,
+    maxResults: 50,
+    autoPaginate: false,
+  );
   while (options != null) {
     var response = await bucket.getFiles(options);
     paths.addAll(response.files.map((file) => file.name));
@@ -197,10 +199,11 @@ Stream<double> uploadWithProgress(
 
 ## Common mistakes
 
-* Calling `file.getMetadata()` or reading `file.metadata` on a fresh `File`
-  without a prior `exists()`/read/write.
-* Relying on `GetFilesOptions.autoPaginate`, or stopping the listing loop on
-  an empty `files` page instead of on a null `nextQuery`.
+* Reading `file.metadata` (always null here) instead of `getMetadata()`.
+* Stopping a manual listing loop (`autoPaginate: false`) on a short page
+  instead of on a null `nextQuery`.
+* Trusting `file.exists()` returning `false` after an error: it also means
+  permission denied or no network.
 * Expecting `bucket.create()` or a meaningful `bucket.exists()` for a
   non-default bucket.
 * Passing a non-Flutter app to `storageServiceFlutter.storage(app)`.

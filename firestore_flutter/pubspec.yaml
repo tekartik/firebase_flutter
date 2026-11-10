@@ -30,6 +30,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # setupFirebaseCoreMocks
+  firebase_core_platform_interface: ">=6.0.0"
   process_run: ">=1.2.1+1"
   tekartik_lints_flutter:
     git:

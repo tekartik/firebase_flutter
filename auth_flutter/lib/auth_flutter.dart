@@ -9,7 +9,9 @@ export 'auth_flutter_api.dart';
 export 'src/auth_flutter.dart'
     show FirebaseAuthFlutterExtension, FirebaseAuthFlutterImplExtension;
 
-/// The flutter auth service
+/// The Auth service on firebase_auth, a single instance:
+/// `firebaseAuthServiceFlutter.auth(app)` gives the `FirebaseAuth` of a
+/// `firebaseFlutter` app (cached per app).
 FirebaseAuthService get firebaseAuthServiceFlutter => auth_flutter.authService;
 
 /// Compat

@@ -372,7 +372,8 @@ extension FirebaseAuthFlutterExtension on Auth {
 
   AuthFlutterImpl get _impl => (this as AuthFlutterImpl);
 
-  /// Use firestore emulator
+  /// Uses the AUTH emulator at [host]:[port], despite its name (prefer
+  /// `useAuthEmulator` on a [FirebaseAuthFlutter]).
   Future<void> useFirestoreEmulator(String host, int port) {
     return _impl.nativeUseEmulator(host, port);
   }
@@ -385,7 +386,8 @@ extension FirebaseAuthFlutterExtension on Auth {
 extension FirebaseAuthFlutterImplExtension on FirebaseAuthFlutter {
   AuthFlutterImpl get _impl => (this as AuthFlutterImpl);
 
-  /// Use firestore emulator
+  /// Uses the auth emulator at [host]:[port] (`localhost` is mapped on the
+  /// Android emulator). Call it before any sign in.
   Future<void> useAuthEmulator(String host, int port) {
     return _impl.useFirestoreEmulator(host, port);
   }
