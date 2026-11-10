@@ -39,8 +39,8 @@ API (free tier) and the Vertex AI / agent platform one, behind the same
   (`FirebaseVertexAi`, `FirebaseVertexAiService`, `VaiGenerativeModel`,
   `VaiContent`/`Content`, `VaiContentTextPart`/`TextPart`,
   `VaiContentDataPart`/`InlineDataPart`, `VaiGenerateContentResponse`,
-  `GenerationConfig`, `Schema`, `SchemaType`,
-  `vertexAiModelGemini1dot5Flash`) plus `vertexAiLocationParis`
+  `GenerationConfig`, `Schema`, `SchemaType`, `vertexAiModelDefault`,
+  `vertexAiModelGemini2dot5Flash`) plus `vertexAiLocationParis`
   (`'europe-west9'`). It does **not** re-export `tekartik_firebase`: import
   `package:tekartik_firebase_flutter/firebase_flutter.dart` for the app.
 * Pick a service by constructing it (the library exports the interfaces with
@@ -59,10 +59,10 @@ API (free tier) and the Vertex AI / agent platform one, behind the same
   (`FirebaseAppFlutter`): it casts, so any other backend throws a
   `TypeError`. The result is cached per app and registered on it
   (`app.getProduct<FirebaseVertexAi>()`), and disposed with the app.
-* `vertexAi.generativeModel(model: 'gemini-2.5-flash')`: always pass an
-  explicit model, the fallback is `vertexAiModelGemini1dot5Flash`
-  (`'gemini-1.5-flash'`), which is old. The model name is not validated at
-  creation: a wrong one fails at `generateContent`.
+* `vertexAi.generativeModel(model: 'gemini-2.5-flash')`: prefer an explicit
+  model, the fallback is `'gemini-2.5-flash'` (`vertexAiModelDefault`). The
+  model name is not validated at creation: a wrong one fails at
+  `generateContent`.
 * `await model.generateContent([Content.text('...')])` returns a
   `VaiGenerateContentResponse` whose `text` is **nullable** (blocked or empty
   answer): test it, never `!` it.
@@ -73,8 +73,9 @@ API (free tier) and the Vertex AI / agent platform one, behind the same
   `VaiContent.model` (role `'user'` / `'model'`), and pass the conversation as
   the prompt list for multi-turn.
 * `GenerationConfig` is mapped field by field to the native one:
-  `candidateCount`, `maxOutputTokens`, `temperature`, `topP`, `topK`,
-  `responseMimeType`, `responseSchema`. `stopSequences` is **dropped** here.
+  `candidateCount`, `stopSequences` (an empty list is not sent),
+  `maxOutputTokens`, `temperature`, `topP`, `topK`, `responseMimeType`,
+  `responseSchema`.
   For JSON output set `responseMimeType: 'application/json'` and a
   `responseSchema` (`Schema.object(properties: {...},
   optionalProperties: [...])`, `Schema.string()`, `Schema.number()`,
@@ -226,8 +227,8 @@ Stream<String> streamAnswer(FirebaseApp app, String prompt) {
   `FirebaseGeminiAiServiceFlutter()` / `FirebaseVertexAiServiceFlutter()` once
   yourself.
 * Re-creating the service on every call (new cache, new product each time).
-* Using the default model instead of passing a current one.
+* Relying on the default model where a given one is needed (the default
+  follows `vertexAiModelDefault`).
 * Using `response.text!` on a possibly blocked answer.
-* Passing `stopSequences` in `GenerationConfig` (ignored on Flutter) or
-  expecting streaming / chat / function calling from this wrapper.
+* Expecting streaming / chat / function calling from this wrapper.
 * Passing a memory or rest app to `service.vertexAi(app)` (TypeError).
