@@ -94,6 +94,8 @@ class FileFlutter with FileMixin implements File {
       native.SettableMetadata(
         contentType: contentType,
         cacheControl: options?.cacheControl,
+        contentDisposition: options?.contentDisposition,
+        customMetadata: options?.metadata,
       ),
     );
   }
